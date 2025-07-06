@@ -1,0 +1,154 @@
+/* General Body and Container Styles */
+body {
+    background-color: #f0f2f5;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.container {
+    max-width: 960px; /* Increased width for stats page */
+}
+
+/* Main Navigation */
+.main-nav {
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.main-nav .nav-item {
+    flex: 1 1 auto; /* Allow items to grow and fill space */
+    text-align: center;
+}
+
+.main-nav .nav-link {
+    color: #6c757d;
+    font-weight: 500;
+    padding: 1rem;
+    border-bottom: 3px solid transparent; /* Add transparent border for consistent height */
+}
+
+.main-nav .nav-link.active {
+    color: #0d6efd;
+    border-bottom-color: #0d6efd;
+    background-color: transparent;
+}
+
+
+/* Shared Card Styles */
+.summary-card, .transaction-form, .stats-card {
+    margin-bottom: 1.5rem;
+    border: none;
+    border-radius: 0.75rem;
+    background-color: #fff;
+}
+
+/* Transaction Form & List Styles */
+.transaction-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    border: 1px solid #e9ecef;
+    border-radius: 0.5rem !important;
+    margin-bottom: 0.5rem;
+    background-color: #fff;
+}
+
+.transaction-item .description {
+    font-weight: 500;
+}
+
+.transaction-item .amount.income {
+    color: #198754;
+    font-weight: 500;
+}
+
+.transaction-item .amount.expense {
+    color: #dc3545;
+    font-weight: 500;
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.nav-tabs .nav-link.active {
+    color: #0d6efd;
+    background-color: transparent;
+    border-bottom: 2px solid #0d6efd;
+}
+
+.category-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 0.5rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.category-item:hover {
+    background-color: #e9ecef;
+}
+
+.category-item.active {
+    background-color: #0d6efd;
+    color: #fff;
+}
+
+.category-item .icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.category-item .name {
+    font-size: 0.8rem;
+    text-align: center;
+}
+
+/* Statistics Page Styles */
+.stats-filter {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stats-summary .card {
+    text-align: center;
+}
+
+.stats-summary h6 {
+    color: #6c757d;
+}
+
+.breakdown-list .list-group-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+}
+
+.breakdown-list .category-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.breakdown-list .icon {
+    font-size: 1.25rem;
+}
+
+.breakdown-list .progress {
+    height: 8px;
+    width: 100px;
+}
+
+.chart-container {
+    position: relative;
+    height: 300px;
+    width: 300px;
+    margin: auto;
+}
