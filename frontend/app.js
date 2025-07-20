@@ -184,24 +184,4 @@ const App = () => {
     );
 };
 
-// Initialize the app
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, initializing app...');
-    console.log('Available components:', {
-        createTranslator: typeof window.createTranslator,
-        Toast: typeof window.Toast,
-        AuthPage: typeof window.AuthPage,
-        BookkeepingPage: typeof window.BookkeepingPage,
-        StatisticsPage: typeof window.StatisticsPage,
-        RecordsPage: typeof window.RecordsPage
-    });
-    
-    const rootElement = document.getElementById('root');
-    if (rootElement) {
-        const root = ReactDOM.createRoot(rootElement);
-        root.render(<App />);
-        console.log('App rendered successfully');
-    } else {
-        console.error('Root element not found!');
-    }
-});
+ReactDOM.render(<App />, document.getElementById('root'));
