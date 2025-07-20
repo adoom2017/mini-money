@@ -32,6 +32,7 @@ const App = () => {
         setToken(token);
         setUser(user);
         setIsAuthenticated(true);
+        setPage('bookkeeping'); // 确保登录后设置为记账页面
         showToast(t('login_success'), 'success');
     };
 
@@ -177,11 +178,33 @@ const App = () => {
             </ul>
 
             {/* Page content */}
-            {page === 'bookkeeping' && window.BookkeepingPage && <BookkeepingPage {...commonProps} />}
-            {page === 'records' && window.RecordsPage && <RecordsPage {...commonProps} />}
-            {page === 'statistics' && window.StatisticsPage && <StatisticsPage {...commonProps} />}
+            {page === 'bookkeeping' && (
+                window.BookkeepingPage ? 
+                <BookkeepingPage {...commonProps} /> : 
+                <div className="alert alert-warning">
+                    <h5>记账页面组件正在加载中...</h5>
+                    <p>当前页面: {page}</p>
+                    <p>组件状态: BookkeepingPage = {typeof window.BookkeepingPage}</p>
+                    <p>如果一直显示此信息，请检查组件是否正确加载。</p>
+                </div>
+            )}
+            {page === 'records' && (
+                window.RecordsPage ? 
+                <RecordsPage {...commonProps} /> : 
+                <div className="alert alert-info">记录页面组件正在加载中...</div>
+            )}
+            {page === 'statistics' && (
+                window.StatisticsPage ? 
+                <StatisticsPage {...commonProps} /> : 
+                <div className="alert alert-info">统计页面组件正在加载中...</div>
+            )}
         </div>
     );
 };
 
-ReactDOM.render(<App />, document.getElementById('root'));
+// Use React 18 createRoot but keep immediate execution for compatibility
+const rootElement = document.getElementById('root');
+if (rootElement) {
+    const root = ReactDOM.createRoot(rootElement);
+    root.render(<App />);
+}
