@@ -1,3 +1,6 @@
 finance.db
 images/
 build/
+*.exe
+*.log
+*.db

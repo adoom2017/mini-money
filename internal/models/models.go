@@ -2,9 +2,47 @@ package models
 
 import "time"
 
+// User represents a user account
+type User struct {
+	ID        int64     `json:"id"`
+	Username  string    `json:"username"`
+	Email     string    `json:"email"`
+	Password  string    `json:"-"` // 密码不会在 JSON 中返回
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+
+// LoginRequest represents login request data
+type LoginRequest struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Password string `json:"password" binding:"required"`
+}
+
+// RegisterRequest represents registration request data
+type RegisterRequest struct {
+	Username string `json:"username" binding:"required,min=3,max=20"`
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required,min=6"`
+}
+
+// AuthResponse represents authentication response
+type AuthResponse struct {
+	Token string       `json:"token"`
+	User  UserResponse `json:"user"`
+}
+
+// UserResponse represents user data returned in API responses
+type UserResponse struct {
+	ID       int64  `json:"id"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+}
+
 // Transaction represents a financial transaction
 type Transaction struct {
 	ID          int64     `json:"id"`
+	UserID      int64     `json:"userId"`
 	Description string    `json:"description"`
 	Amount      float64   `json:"amount"`
 	Type        string    `json:"type"`

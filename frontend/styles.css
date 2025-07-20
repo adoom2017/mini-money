@@ -281,3 +281,111 @@ body {
     font-weight: 600;
     font-size: 1.1rem;
 }
+
+/* Toast Notification Styles */
+.custom-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    min-width: 300px;
+    max-width: 400px;
+    background: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    transform: translateX(400px);
+    transition: all 0.3s ease-in-out;
+    z-index: 9999;
+    border-left: 4px solid #007bff;
+}
+
+.custom-toast.show {
+    transform: translateX(0);
+}
+
+.custom-toast.toast-success {
+    border-left-color: #28a745;
+    background: linear-gradient(135deg, #f8fff9 0%, #e8f5e8 100%);
+}
+
+.custom-toast.toast-error {
+    border-left-color: #dc3545;
+    background: linear-gradient(135deg, #fff8f8 0%, #fce8e8 100%);
+}
+
+.custom-toast.toast-info {
+    border-left-color: #17a2b8;
+    background: linear-gradient(135deg, #f8feff 0%, #e8f4f8 100%);
+}
+
+.toast-content {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    position: relative;
+}
+
+.toast-icon {
+    font-size: 1.25rem;
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+}
+
+.toast-message {
+    flex: 1;
+    font-weight: 500;
+    color: #2c3e50;
+    line-height: 1.4;
+}
+
+.toast-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.75rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease;
+}
+
+.toast-close:hover {
+    color: #495057;
+}
+
+/* 添加动画效果 */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.custom-toast.show {
+    animation: slideInRight 0.3s ease-out;
+}
+
+.custom-toast.hide {
+    animation: slideOutRight 0.3s ease-in;
+}
