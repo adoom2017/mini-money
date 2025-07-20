@@ -116,6 +116,11 @@ body {
     margin-bottom: 1.5rem;
 }
 
+.stats-filter .form-select {
+    min-width: 120px; /* Ensure enough width for year display */
+    width: auto;
+}
+
 .stats-summary .card {
     text-align: center;
 }
@@ -137,6 +142,14 @@ body {
     gap: 0.75rem;
 }
 
+.breakdown-list .color-indicator {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,0.1);
+    flex-shrink: 0;
+}
+
 .breakdown-list .icon {
     font-size: 1.25rem;
 }
@@ -151,4 +164,120 @@ body {
     height: 300px;
     width: 300px;
     margin: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chart-container canvas {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+/* Chart Legend Styles */
+.chart-legend {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem 1rem; /* 垂直间距0.75rem，水平间距1rem */
+    max-width: 300px;
+    margin: 0 auto;
+    line-height: 1.4;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    margin-bottom: 0.25rem; /* 额外的底部间距 */
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,0.1);
+    flex-shrink: 0;
+}
+
+.legend-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 90px; /* 增加最大宽度 */
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .chart-legend {
+        gap: 0.5rem 0.75rem; /* 移动端减少间距 */
+        max-width: 100%;
+    }
+    
+    .legend-item {
+        font-size: 0.8rem;
+        margin-bottom: 0.2rem;
+    }
+    
+    .legend-text {
+        max-width: 70px; /* 移动端稍微减少宽度 */
+    }
+}
+
+/* Records Page Styles */
+.records-card {
+    margin-bottom: 1.5rem;
+    border: none;
+    border-radius: 0.75rem;
+    background-color: #fff;
+}
+
+.records-filter {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.records-filter .form-select {
+    min-width: 120px;
+    width: auto;
+}
+
+.records-filter .form-control {
+    min-width: 200px;
+}
+
+.records-card .transaction-item {
+    margin-bottom: 1rem;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.records-card .transaction-item .transaction-left {
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+.records-card .transaction-item .transaction-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+}
+
+.records-card .transaction-item .description {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.records-card .transaction-item .amount {
+    font-weight: 600;
+    font-size: 1.1rem;
 }

@@ -25,6 +25,17 @@ const translations = {
         loading: "Loading...",
         error_fetching_stats: "Error fetching statistics.",
         no_data_period: "No data for this period.",
+        // Records Page
+        records: "Records",
+        records_title: "Transaction Records",
+        all_records: "All Records",
+        filter_by_type: "Filter by Type",
+        all_types: "All Types",
+        search_description: "Search by description...",
+        no_records: "No records found.",
+        edit: "Edit",
+        delete: "Delete",
+        confirm_delete: "Are you sure you want to delete this transaction?",
         // Categories
         food: "Food", medical: "Medical", transport: "Transport", housing: "Housing", snacks: "Snacks",
         learning: "Learning", communication: "Communication", social: "Social", investment: "Investment", shopping: "Shopping",
@@ -56,6 +67,17 @@ const translations = {
         loading: "加载中...",
         error_fetching_stats: "加载统计数据失败。",
         no_data_period: "该时段无数据。",
+        // Records Page
+        records: "记录",
+        records_title: "交易记录",
+        all_records: "全部记录",
+        filter_by_type: "按类型筛选",
+        all_types: "全部类型",
+        search_description: "搜索备注...",
+        no_records: "暂无记录。",
+        edit: "编辑",
+        delete: "删除",
+        confirm_delete: "确定要删除这条记录吗？",
         // Categories
         food: "早午晚餐", medical: "医疗", transport: "出行交通", housing: "住房", snacks: "零食烟酒",
         learning: "学习", communication: "通讯", social: "社交", investment: "金融投资", shopping: "购物",
@@ -108,11 +130,16 @@ const App = () => {
                     <a className={`nav-link ${page === 'bookkeeping' ? 'active' : ''}`} href="#" onClick={() => setPage('bookkeeping')}>{t('bookkeeping')}</a>
                 </li>
                 <li className="nav-item">
+                    <a className={`nav-link ${page === 'records' ? 'active' : ''}`} href="#" onClick={() => setPage('records')}>{t('records')}</a>
+                </li>
+                <li className="nav-item">
                     <a className={`nav-link ${page === 'statistics' ? 'active' : ''}`} href="#" onClick={() => setPage('statistics')}>{t('statistics')}</a>
                 </li>
             </ul>
 
-            {page === 'bookkeeping' ? <BookkeepingPage {...commonProps} /> : <StatisticsPage {...commonProps} />}
+            {page === 'bookkeeping' ? <BookkeepingPage {...commonProps} /> : 
+             page === 'records' ? <RecordsPage {...commonProps} /> :
+             <StatisticsPage {...commonProps} />}
         </div>
     );
 };
@@ -259,6 +286,18 @@ const StatisticsPage = ({ lang, t, categoryIconMap }) => {
     const chartRef = React.useRef(null);
     const chartInstance = React.useRef(null);
 
+    // 定义固定的颜色数组，确保每个分类都有对应的颜色
+    const chartColors = [
+        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', 
+        '#FF9F40', '#C9CBCF', '#E7E9ED', '#7FDBFF', '#F012BE',
+        '#FF851B', '#2ECC40', '#FFDC00', '#001F3F', '#85144B'
+    ];
+
+    // 获取分类对应的颜色
+    const getCategoryColor = (categoryKey, index) => {
+        return chartColors[index % chartColors.length];
+    };
+
     const fetchStatistics = async () => {
         setLoading(true);
         setError(null);
@@ -278,29 +317,81 @@ const StatisticsPage = ({ lang, t, categoryIconMap }) => {
         fetchStatistics();
     }, [year, month]);
 
+    // 添加一个effect来处理页面切换时的图表刷新
+    React.useEffect(() => {
+        // 当统计页面变为可见时，延迟一点时间确保DOM完全渲染
+        const timeoutId = setTimeout(() => {
+            if (stats && chartRef.current && !chartInstance.current) {
+                // 如果图表还没有创建，触发重新渲染
+                const breakdown = activeTab === 'expense' ? stats.expenseBreakdown : stats.incomeBreakdown;
+                if (breakdown && breakdown.length > 0) {
+                    // 触发图表重新渲染的依赖项更新
+                    setActiveTab(prev => prev);
+                }
+            }
+        }, 200);
+
+        return () => clearTimeout(timeoutId);
+    }, []); // 仅在组件挂载时运行一次
+
     React.useEffect(() => {
         if (chartInstance.current) {
             chartInstance.current.destroy();
+            chartInstance.current = null;
         }
-        if (stats && chartRef.current) {
-            const breakdown = activeTab === 'expense' ? stats.expenseBreakdown : stats.incomeBreakdown;
-            if (!breakdown || breakdown.length === 0) return;
+        
+        // 添加延迟确保DOM元素已经渲染
+        const renderChart = () => {
+            if (stats && chartRef.current) {
+                const breakdown = activeTab === 'expense' ? stats.expenseBreakdown : stats.incomeBreakdown;
+                if (!breakdown || breakdown.length === 0) return;
 
-            const chartData = {
-                labels: breakdown.map(d => t(d.categoryKey)),
-                datasets: [{
-                    data: breakdown.map(d => d.amount),
-                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#C9CBCF', '#E7E9ED', '#7FDBFF', '#F012BE'],
-                    borderWidth: 1,
-                }]
-            };
-            chartInstance.current = new Chart(chartRef.current, {
-                type: 'doughnut',
-                data: chartData,
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-            });
-        }
+                const chartData = {
+                    labels: breakdown.map(d => t(d.categoryKey)),
+                    datasets: [{
+                        data: breakdown.map(d => d.amount),
+                        backgroundColor: breakdown.map((d, index) => getCategoryColor(d.categoryKey, index)),
+                        borderWidth: 1,
+                    }]
+                };
+                
+                try {
+                    chartInstance.current = new Chart(chartRef.current, {
+                        type: 'doughnut',
+                        data: chartData,
+                        options: { 
+                            responsive: true, 
+                            maintainAspectRatio: false, 
+                            plugins: { legend: { display: false } },
+                            animation: {
+                                animateRotate: true,
+                                animateScale: false
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error creating chart:', error);
+                }
+            }
+        };
+
+        // 使用setTimeout确保DOM完全渲染后再创建图表
+        const timeoutId = setTimeout(renderChart, 100);
+        
+        return () => {
+            clearTimeout(timeoutId);
+        };
     }, [stats, activeTab, lang]);
+
+    // 组件卸载时清理图表
+    React.useEffect(() => {
+        return () => {
+            if (chartInstance.current) {
+                chartInstance.current.destroy();
+                chartInstance.current = null;
+            }
+        };
+    }, []);
 
     const years = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i);
     const months = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -331,9 +422,13 @@ const StatisticsPage = ({ lang, t, categoryIconMap }) => {
                     <div className="row">
                         <div className="col-md-7 breakdown-list">
                             <ul className="list-group list-group-flush">
-                                {breakdown.map(item => (
+                                {breakdown.map((item, index) => (
                                     <li className="list-group-item" key={item.categoryKey}>
                                         <div className="category-info">
+                                            <div 
+                                                className="color-indicator"
+                                                style={{ backgroundColor: getCategoryColor(item.categoryKey, index) }}
+                                            ></div>
                                             <span className="icon">{categoryIconMap.get(item.categoryKey) || '❓'}</span>
                                             <span>{t(item.categoryKey)}</span>
                                         </div>
@@ -346,9 +441,20 @@ const StatisticsPage = ({ lang, t, categoryIconMap }) => {
                                 ))}
                             </ul>
                         </div>
-                        <div className="col-md-5 d-flex align-items-center justify-content-center">
+                        <div className="col-md-5 d-flex flex-column align-items-center justify-content-center">
                             <div className="chart-container">
                                 <canvas ref={chartRef}></canvas>
+                            </div>
+                            <div className="chart-legend mt-3">
+                                {breakdown.map((item, index) => (
+                                    <div key={item.categoryKey} className="legend-item">
+                                        <div 
+                                            className="legend-color"
+                                            style={{ backgroundColor: getCategoryColor(item.categoryKey, index) }}
+                                        ></div>
+                                        <span className="legend-text">{t(item.categoryKey)}</span>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>
@@ -372,6 +478,146 @@ const StatisticsPage = ({ lang, t, categoryIconMap }) => {
                     </select>
                 </div>
             </div>
+            {renderContent()}
+        </div>
+    );
+};
+
+const RecordsPage = ({ lang, t, allCategories, categoryIconMap }) => {
+    const [transactions, setTransactions] = React.useState([]);
+    const [filteredTransactions, setFilteredTransactions] = React.useState([]);
+    const [loading, setLoading] = React.useState(true);
+    const [error, setError] = React.useState(null);
+    const [filterType, setFilterType] = React.useState('all');
+    const [searchTerm, setSearchTerm] = React.useState('');
+
+    const fetchTransactions = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await fetch('/api/transactions');
+            if (!response.ok) throw new Error('Network response was not ok');
+            const data = await response.json();
+            setTransactions(data || []);
+            setFilteredTransactions(data || []);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    React.useEffect(() => {
+        fetchTransactions();
+    }, []);
+
+    React.useEffect(() => {
+        let filtered = transactions;
+        
+        // Filter by type
+        if (filterType !== 'all') {
+            filtered = filtered.filter(t => t.type === filterType);
+        }
+        
+        // Filter by search term
+        if (searchTerm) {
+            filtered = filtered.filter(item => 
+                item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                t(item.categoryKey).toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        }
+        
+        setFilteredTransactions(filtered);
+    }, [transactions, filterType, searchTerm, t]);
+
+    const handleDelete = async (id) => {
+        if (confirm(t('confirm_delete'))) {
+            try {
+                const response = await fetch(`/api/transactions/${id}`, {
+                    method: 'DELETE'
+                });
+                if (response.ok) {
+                    fetchTransactions();
+                } else {
+                    console.error('Failed to delete transaction');
+                }
+            } catch (error) {
+                console.error('Error deleting transaction:', error);
+            }
+        }
+    };
+
+    const formatDate = (dateString) => {
+        const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+        return new Date(dateString).toLocaleDateString(lang === 'zh' ? 'zh-CN' : 'en-US', options);
+    };
+
+    const renderContent = () => {
+        if (loading) return <div className="text-center p-5">{t('loading')}</div>;
+        if (error) return <div className="alert alert-danger">{t('error_fetching_stats')}</div>;
+        if (filteredTransactions.length === 0) {
+            return <div className="text-center p-5">{t('no_records')}</div>;
+        }
+
+        return (
+            <div className="list-group">
+                {filteredTransactions.map(item => (
+                    <div key={item.id} className="list-group-item transaction-item">
+                        <div className="transaction-left">
+                            <div className="me-3 fs-4">{categoryIconMap.get(item.categoryKey) || '❓'}</div>
+                            <div>
+                                <div className="description">{item.description || t(item.categoryKey)}</div>
+                                <small className="d-block text-muted">{formatDate(item.date)}</small>
+                                <small className="d-block text-muted">{t(item.categoryKey)}</small>
+                            </div>
+                        </div>
+                        <div className="transaction-right">
+                            <span className={`amount ${item.type} fs-5`}>
+                                {item.type === 'income' ? '+' : '-'}{t('currencySymbol')}{item.amount.toFixed(2)}
+                            </span>
+                            <button 
+                                className="btn btn-sm btn-outline-danger"
+                                onClick={() => handleDelete(item.id)}
+                            >
+                                {t('delete')}
+                            </button>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        );
+    };
+
+    return (
+        <div className="records-card shadow-sm p-4">
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <h4>{t('records_title')}</h4>
+                <div className="records-filter">
+                    <select 
+                        className="form-select me-2" 
+                        value={filterType} 
+                        onChange={e => setFilterType(e.target.value)}
+                        disabled={loading}
+                    >
+                        <option value="all">{t('all_types')}</option>
+                        <option value="income">{t('income')}</option>
+                        <option value="expense">{t('expense')}</option>
+                    </select>
+                    <input
+                        type="text"
+                        className="form-control"
+                        placeholder={t('search_description')}
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
+                        disabled={loading}
+                    />
+                </div>
+            </div>
+            
+            <div className="mb-3 text-muted">
+                {t('all_records')}: {filteredTransactions.length}
+            </div>
+            
             {renderContent()}
         </div>
     );
