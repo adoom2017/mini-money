@@ -7,6 +7,7 @@ const AssetsPage = ({ t, showToast, fetchWithAuth }) => {
     const [selectedAsset, setSelectedAsset] = React.useState(null);
     const [newAsset, setNewAsset] = React.useState({ name: '' });
     const [newRecord, setNewRecord] = React.useState({ date: '', amount: '' });
+    const [viewMode, setViewMode] = React.useState('table'); // 'table' or 'chart'
 
     // Load assets from API
     React.useEffect(() => {
@@ -198,6 +199,104 @@ const AssetsPage = ({ t, showToast, fetchWithAuth }) => {
         return records[0].amount; // records are sorted by date desc
     };
 
+    // Initialize charts when view mode changes to chart
+    React.useEffect(() => {
+        if (viewMode === 'chart') {
+            // Small delay to ensure DOM elements are rendered
+            setTimeout(() => {
+                assets.forEach(asset => {
+                    if (asset.records.length > 0) {
+                        const chartId = `chart-${asset.id}`;
+                        const ctx = document.getElementById(chartId);
+                        if (ctx) {
+                            // Destroy existing chart if it exists
+                            if (window.assetCharts && window.assetCharts[chartId]) {
+                                window.assetCharts[chartId].destroy();
+                            }
+                            
+                            // Prepare data for chart (sort by date ascending for proper line chart)
+                            const sortedRecords = [...asset.records].sort((a, b) => new Date(a.date) - new Date(b.date));
+                            const labels = sortedRecords.map(record => record.date);
+                            const data = sortedRecords.map(record => record.amount);
+                            
+                            // Create new chart
+                            const chart = new Chart(ctx, {
+                                type: 'line',
+                                data: {
+                                    labels: labels,
+                                    datasets: [{
+                                        label: asset.name,
+                                        data: data,
+                                        borderColor: 'rgb(13, 110, 253)',
+                                        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                                        tension: 0.1,
+                                        fill: true
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true,
+                                            ticks: {
+                                                callback: function(value) {
+                                                    return '¥' + value.toLocaleString();
+                                                }
+                                            }
+                                        }
+                                    },
+                                    plugins: {
+                                        legend: {
+                                            display: true,
+                                            position: 'top'
+                                        },
+                                        tooltip: {
+                                            callbacks: {
+                                                label: function(context) {
+                                                    return asset.name + ': ¥' + context.parsed.y.toLocaleString();
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+                            
+                            // Store chart instance for cleanup
+                            if (!window.assetCharts) {
+                                window.assetCharts = {};
+                            }
+                            window.assetCharts[chartId] = chart;
+                        }
+                    }
+                });
+            }, 100);
+        }
+        
+        // Cleanup function
+        return () => {
+            if (window.assetCharts) {
+                Object.values(window.assetCharts).forEach(chart => {
+                    if (chart && typeof chart.destroy === 'function') {
+                        chart.destroy();
+                    }
+                });
+                window.assetCharts = {};
+            }
+        };
+    }, [viewMode, assets]);
+
+    // Render chart container for a single asset
+    const renderAssetChart = (asset) => {
+        const chartId = `chart-${asset.id}`;
+        
+        return (
+            <div className="chart-container" style={{ height: '300px', position: 'relative' }}>
+                <canvas id={chartId}></canvas>
+            </div>
+        );
+    };
+
     // Calculate total assets
     const totalAssets = assets.reduce((sum, asset) => sum + getLatestAmount(asset.records), 0);
 
@@ -211,14 +310,35 @@ const AssetsPage = ({ t, showToast, fetchWithAuth }) => {
                         总资产: <span className="fw-bold text-primary">{formatCurrency(totalAssets)}</span>
                     </div>
                 </div>
-                <button 
-                    className="btn btn-primary"
-                    onClick={() => setShowAddModal(true)}
-                    disabled={loading}
-                >
-                    <span className="me-1">+</span>
-                    添加资产
-                </button>
+                <div className="d-flex gap-2">
+                    {/* View Mode Toggle */}
+                    <div className="btn-group" role="group">
+                        <button 
+                            type="button" 
+                            className={`btn ${viewMode === 'table' ? 'btn-primary' : 'btn-outline-primary'}`}
+                            onClick={() => setViewMode('table')}
+                            disabled={loading}
+                        >
+                            <i className="bi bi-table"></i> 表格
+                        </button>
+                        <button 
+                            type="button" 
+                            className={`btn ${viewMode === 'chart' ? 'btn-primary' : 'btn-outline-primary'}`}
+                            onClick={() => setViewMode('chart')}
+                            disabled={loading || assets.length === 0}
+                        >
+                            <i className="bi bi-graph-up"></i> 图表
+                        </button>
+                    </div>
+                    <button 
+                        className="btn btn-primary"
+                        onClick={() => setShowAddModal(true)}
+                        disabled={loading}
+                    >
+                        <span className="me-1">+</span>
+                        添加资产
+                    </button>
+                </div>
             </div>
 
             {/* Loading state */}
@@ -229,8 +349,8 @@ const AssetsPage = ({ t, showToast, fetchWithAuth }) => {
                     </div>
                 </div>
             ) : (
-                /* Assets List */
-                <div className="assets-list">
+                /* Assets Content */
+                <div className="assets-content">
                     {assets.length === 0 ? (
                         <div className="text-center py-5">
                             <div className="text-muted mb-3">
@@ -239,15 +359,17 @@ const AssetsPage = ({ t, showToast, fetchWithAuth }) => {
                             <h5 className="text-muted">暂无资产记录</h5>
                             <p className="text-muted">点击"添加资产"按钮开始记录您的资产</p>
                         </div>
-                    ) : (
-                        assets.map(asset => (
-                            <div key={asset.id} className="card mb-3">
-                                {/* Asset Header */}
-                                <div 
-                                    className="card-header d-flex justify-content-between align-items-center cursor-pointer"
-                                    onClick={() => toggleAsset(asset.id)}
-                                    style={{ cursor: 'pointer' }}
-                                >
+                    ) : viewMode === 'table' ? (
+                        /* Table View */
+                        <div className="assets-list">
+                            {assets.map(asset => (
+                                <div key={asset.id} className="card mb-3">
+                                    {/* Asset Header */}
+                                    <div 
+                                        className="card-header d-flex justify-content-between align-items-center cursor-pointer"
+                                        onClick={() => toggleAsset(asset.id)}
+                                        style={{ cursor: 'pointer' }}
+                                    >
                                     <div className="d-flex align-items-center">
                                         <span className="me-2">
                                             {asset.expanded ? '▼' : '▶'}
@@ -325,7 +447,53 @@ const AssetsPage = ({ t, showToast, fetchWithAuth }) => {
                                     </div>
                                 )}
                             </div>
-                        ))
+                        ))}
+                        </div>
+                    ) : (
+                        /* Chart View */
+                        <div className="charts-container">
+                            {assets.map(asset => (
+                                asset.records.length > 0 && (
+                                    <div key={asset.id} className="card mb-3">
+                                        <div className="card-header">
+                                            <div className="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h6 className="mb-0">{asset.name}</h6>
+                                                    <small className="text-muted">
+                                                        当前: {formatCurrency(getLatestAmount(asset.records))}
+                                                    </small>
+                                                </div>
+                                                <div className="d-flex gap-2">
+                                                    <button 
+                                                        className="btn btn-sm btn-outline-primary"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setSelectedAsset(asset);
+                                                            setNewRecord({ date: '', amount: '' });
+                                                            setShowRecordModal(true);
+                                                        }}
+                                                    >
+                                                        添加记录
+                                                    </button>
+                                                    <button 
+                                                        className="btn btn-sm btn-outline-danger"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleDeleteAsset(asset.id);
+                                                        }}
+                                                    >
+                                                        删除
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="card-body">
+                                            {renderAssetChart(asset)}
+                                        </div>
+                                    </div>
+                                )
+                            ))}
+                        </div>
                     )}
                 </div>
             )}
