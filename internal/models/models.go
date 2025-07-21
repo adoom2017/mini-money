@@ -108,3 +108,43 @@ var IncomeCategories = []Category{
 	{Key: "salary", Icon: "💼"}, {Key: "part_time", Icon: "👨‍💻"}, {Key: "financial", Icon: "💰"},
 	{Key: "red_packet", Icon: "🧧"}, {Key: "other", Icon: "🎁"},
 }
+
+// Asset represents an asset account
+type Asset struct {
+	ID        int64     `json:"id"`
+	UserID    int64     `json:"userId"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+
+// AssetRecord represents a record of asset value at a specific date
+type AssetRecord struct {
+	ID        int64     `json:"id"`
+	AssetID   int64     `json:"assetId"`
+	Date      string    `json:"date"` // YYYY-MM-DD format
+	Amount    float64   `json:"amount"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+
+// AssetWithRecords represents an asset with its records
+type AssetWithRecords struct {
+	ID        int64         `json:"id"`
+	UserID    int64         `json:"userId"`
+	Name      string        `json:"name"`
+	Records   []AssetRecord `json:"records"`
+	CreatedAt time.Time     `json:"createdAt"`
+	UpdatedAt time.Time     `json:"updatedAt"`
+}
+
+// CreateAssetRequest represents request to create a new asset
+type CreateAssetRequest struct {
+	Name string `json:"name" binding:"required,min=1,max=100"`
+}
+
+// CreateAssetRecordRequest represents request to create a new asset record
+type CreateAssetRecordRequest struct {
+	Date   string  `json:"date" binding:"required"`
+	Amount float64 `json:"amount" binding:"required,min=0"`
+}

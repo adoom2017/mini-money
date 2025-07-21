@@ -73,6 +73,43 @@ func createTable() error {
 		log.Printf("Error creating transactions table: %v", err)
 		return err
 	}
+
+	// Create assets table
+	assetTableSQL := `
+	CREATE TABLE IF NOT EXISTS assets (
+		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+		user_id INTEGER NOT NULL,
+		name TEXT NOT NULL,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		FOREIGN KEY (user_id) REFERENCES users (id)
+	);
+	`
+	_, err = db.Exec(assetTableSQL)
+	if err != nil {
+		log.Printf("Error creating assets table: %v", err)
+		return err
+	}
+
+	// Create asset_records table
+	assetRecordTableSQL := `
+	CREATE TABLE IF NOT EXISTS asset_records (
+		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+		asset_id INTEGER NOT NULL,
+		date TEXT NOT NULL,
+		amount REAL NOT NULL,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		FOREIGN KEY (asset_id) REFERENCES assets (id) ON DELETE CASCADE,
+		UNIQUE(asset_id, date)
+	);
+	`
+	_, err = db.Exec(assetRecordTableSQL)
+	if err != nil {
+		log.Printf("Error creating asset_records table: %v", err)
+		return err
+	}
+
 	return nil
 }
 
@@ -292,5 +329,162 @@ func UpdateUserEmail(userID int64, email string) error {
 	defer stmt.Close()
 
 	_, err = stmt.Exec(email, time.Now(), userID)
+	return err
+}
+
+// Asset-related database operations
+
+// CreateAsset creates a new asset
+func CreateAsset(asset *models.Asset) error {
+	stmt, err := db.Prepare("INSERT INTO assets(user_id, name, created_at, updated_at) VALUES(?, ?, ?, ?)")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	now := time.Now()
+	res, err := stmt.Exec(asset.UserID, asset.Name, now, now)
+	if err != nil {
+		return err
+	}
+
+	id, err := res.LastInsertId()
+	if err != nil {
+		return err
+	}
+	asset.ID = id
+	asset.CreatedAt = now
+	asset.UpdatedAt = now
+	return nil
+}
+
+// GetAssetsByUserID retrieves all assets for a specific user
+func GetAssetsByUserID(userID int64) ([]models.Asset, error) {
+	rows, err := db.Query("SELECT id, user_id, name, created_at, updated_at FROM assets WHERE user_id = ? ORDER BY created_at DESC", userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	assets := []models.Asset{}
+	for rows.Next() {
+		var asset models.Asset
+		if err := rows.Scan(&asset.ID, &asset.UserID, &asset.Name, &asset.CreatedAt, &asset.UpdatedAt); err != nil {
+			return nil, err
+		}
+		assets = append(assets, asset)
+	}
+	return assets, nil
+}
+
+// GetAssetsWithRecordsByUserID retrieves all assets with their records for a specific user
+func GetAssetsWithRecordsByUserID(userID int64) ([]models.AssetWithRecords, error) {
+	// First get all assets
+	assets, err := GetAssetsByUserID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]models.AssetWithRecords, len(assets))
+	for i, asset := range assets {
+		// Get records for each asset
+		records, err := GetAssetRecordsByAssetID(asset.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		result[i] = models.AssetWithRecords{
+			ID:        asset.ID,
+			UserID:    asset.UserID,
+			Name:      asset.Name,
+			Records:   records,
+			CreatedAt: asset.CreatedAt,
+			UpdatedAt: asset.UpdatedAt,
+		}
+	}
+
+	return result, nil
+}
+
+// GetAssetByID retrieves an asset by ID and verifies user ownership
+func GetAssetByID(assetID, userID int64) (*models.Asset, error) {
+	var asset models.Asset
+	err := db.QueryRow("SELECT id, user_id, name, created_at, updated_at FROM assets WHERE id = ? AND user_id = ?", assetID, userID).
+		Scan(&asset.ID, &asset.UserID, &asset.Name, &asset.CreatedAt, &asset.UpdatedAt)
+	if err != nil {
+		return nil, err
+	}
+	return &asset, nil
+}
+
+// DeleteAsset deletes an asset and all its records
+func DeleteAsset(assetID, userID int64) error {
+	stmt, err := db.Prepare("DELETE FROM assets WHERE id = ? AND user_id = ?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(assetID, userID)
+	return err
+}
+
+// CreateAssetRecord creates a new asset record
+func CreateAssetRecord(record *models.AssetRecord) error {
+	stmt, err := db.Prepare("INSERT OR REPLACE INTO asset_records(asset_id, date, amount, created_at, updated_at) VALUES(?, ?, ?, ?, ?)")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	now := time.Now()
+	res, err := stmt.Exec(record.AssetID, record.Date, record.Amount, now, now)
+	if err != nil {
+		return err
+	}
+
+	id, err := res.LastInsertId()
+	if err != nil {
+		return err
+	}
+	record.ID = id
+	record.CreatedAt = now
+	record.UpdatedAt = now
+	return nil
+}
+
+// GetAssetRecordsByAssetID retrieves all records for a specific asset
+func GetAssetRecordsByAssetID(assetID int64) ([]models.AssetRecord, error) {
+	rows, err := db.Query("SELECT id, asset_id, date, amount, created_at, updated_at FROM asset_records WHERE asset_id = ? ORDER BY date DESC", assetID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	records := []models.AssetRecord{}
+	for rows.Next() {
+		var record models.AssetRecord
+		if err := rows.Scan(&record.ID, &record.AssetID, &record.Date, &record.Amount, &record.CreatedAt, &record.UpdatedAt); err != nil {
+			return nil, err
+		}
+		records = append(records, record)
+	}
+	return records, nil
+}
+
+// DeleteAssetRecord deletes a specific asset record
+func DeleteAssetRecord(recordID, assetID, userID int64) error {
+	stmt, err := db.Prepare(`
+		DELETE FROM asset_records 
+		WHERE id = ? AND asset_id = ? AND asset_id IN (
+			SELECT id FROM assets WHERE user_id = ?
+		)
+	`)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(recordID, assetID, userID)
 	return err
 }

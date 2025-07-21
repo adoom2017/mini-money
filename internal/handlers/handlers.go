@@ -381,3 +381,138 @@ func getMonthBounds(year, month int) (time.Time, time.Time) {
 	end := start.AddDate(0, 1, 0)
 	return start, end
 }
+
+// Asset-related handlers
+
+// GetAssets handles GET /api/assets
+func GetAssets(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+
+	assets, err := database.GetAssetsWithRecordsByUserID(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get assets: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, assets)
+}
+
+// CreateAsset handles POST /api/assets
+func CreateAsset(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+
+	var req models.CreateAssetRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	asset := &models.Asset{
+		UserID: userID,
+		Name:   req.Name,
+	}
+
+	if err := database.CreateAsset(asset); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create asset: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, asset)
+}
+
+// DeleteAsset handles DELETE /api/assets/:id
+func DeleteAsset(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	assetIDStr := c.Param("id")
+
+	assetID, err := strconv.ParseInt(assetIDStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid asset ID"})
+		return
+	}
+
+	// Verify asset ownership
+	_, err = database.GetAssetByID(assetID, userID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Asset not found"})
+		return
+	}
+
+	if err := database.DeleteAsset(assetID, userID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete asset: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Asset deleted successfully"})
+}
+
+// CreateAssetRecord handles POST /api/assets/:id/records
+func CreateAssetRecord(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	assetIDStr := c.Param("id")
+
+	assetID, err := strconv.ParseInt(assetIDStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid asset ID"})
+		return
+	}
+
+	// Verify asset ownership
+	_, err = database.GetAssetByID(assetID, userID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Asset not found"})
+		return
+	}
+
+	var req models.CreateAssetRecordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	record := &models.AssetRecord{
+		AssetID: assetID,
+		Date:    req.Date,
+		Amount:  req.Amount,
+	}
+
+	if err := database.CreateAssetRecord(record); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create asset record: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, record)
+}
+
+// DeleteAssetRecord handles DELETE /api/assets/:id/records/:recordId
+func DeleteAssetRecord(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	assetIDStr := c.Param("id")
+	recordIDStr := c.Param("recordId")
+
+	assetID, err := strconv.ParseInt(assetIDStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid asset ID"})
+		return
+	}
+
+	recordID, err := strconv.ParseInt(recordIDStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid record ID"})
+		return
+	}
+
+	// Verify asset ownership
+	_, err = database.GetAssetByID(assetID, userID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Asset not found"})
+		return
+	}
+
+	if err := database.DeleteAssetRecord(recordID, assetID, userID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete asset record: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Asset record deleted successfully"})
+}

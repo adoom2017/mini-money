@@ -37,6 +37,12 @@ func SetupRoutes() *gin.Engine {
 		api.DELETE("/transactions/:id", handlers.DeleteTransaction)
 		api.GET("/summary", handlers.GetSummary)
 		api.GET("/statistics", handlers.GetStatistics)
+		// Asset routes
+		api.GET("/assets", handlers.GetAssets)
+		api.POST("/assets", handlers.CreateAsset)
+		api.DELETE("/assets/:id", handlers.DeleteAsset)
+		api.POST("/assets/:id/records", handlers.CreateAssetRecord)
+		api.DELETE("/assets/:id/records/:recordId", handlers.DeleteAssetRecord)
 	}
 
 	// Serve frontend for all other routes

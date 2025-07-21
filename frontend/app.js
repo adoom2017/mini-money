@@ -737,6 +737,15 @@ const App = () => {
                         {t('statistics')}
                     </a>
                 </li>
+                <li className="nav-item">
+                    <a 
+                        className={`nav-link ${page === 'assets' ? 'active' : ''}`}
+                        href="#"
+                        onClick={(e) => { e.preventDefault(); setPage('assets'); }}
+                    >
+                        {t('assets')}
+                    </a>
+                </li>
             </ul>
 
             {/* Page content */}
@@ -759,6 +768,11 @@ const App = () => {
                 window.StatisticsPage ? 
                 <StatisticsPage {...commonProps} /> : 
                 <div className="alert alert-info">统计页面组件正在加载中...</div>
+            )}
+            {page === 'assets' && (
+                window.AssetsPage ? 
+                <AssetsPage {...commonProps} /> : 
+                <div className="alert alert-info">资产页面组件正在加载中...</div>
             )}
 
             {/* Avatar Upload Modal */}
