@@ -1,0 +1,42 @@
+# Git相关
+.git
+.gitignore
+
+# Docker相关
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# 文档
+README.md
+*.md
+
+# 临时文件
+*.tmp
+*.log
+
+# 数据库文件（避免包含开发时的数据）
+*.db
+data/
+
+# 构建产物
+main
+mini-money
+
+# IDE和编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 操作系统
+.DS_Store
+Thumbs.db
+
+# Node.js（如果有）
+node_modules/
+npm-debug.log
+
+# 其他
+images/
+ssl/

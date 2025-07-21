@@ -1,0 +1,41 @@
+services:
+  mini-money:
+    build: .
+    container_name: mini-money-app
+    # ports:
+    #   - "8080:8080"  # 移除端口映射，只允许内部访问
+    expose:
+      - "8080"  # 只在Docker网络内部暴露端口
+    volumes:
+      # 持久化数据库文件
+      - ./data:/root/data
+      # 如果需要自定义配置，可以挂载配置文件
+      # - ./config:/root/config
+    environment:
+      - GIN_MODE=release
+      - PORT=8080
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/api/categories"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # nginx作为唯一的外部访问入口
+  nginx:
+    image: nginx:alpine
+    container_name: mini-money-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro  # SSL证书目录
+    depends_on:
+      - mini-money
+    restart: unless-stopped
+
+volumes:
+  data:
+    driver: local
