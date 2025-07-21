@@ -39,6 +39,7 @@ func createTable() error {
 		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 		username TEXT UNIQUE NOT NULL,
 		email TEXT UNIQUE NOT NULL,
+		avatar TEXT DEFAULT '',
 		password TEXT NOT NULL,
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -49,6 +50,10 @@ func createTable() error {
 		log.Printf("Error creating users table: %v", err)
 		return err
 	}
+
+	// Add avatar column to existing users table if it doesn't exist
+	alterTableSQL := `ALTER TABLE users ADD COLUMN avatar TEXT DEFAULT '';`
+	db.Exec(alterTableSQL) // Ignore error if column already exists
 
 	// Create transactions table
 	transactionTableSQL := `
@@ -199,14 +204,14 @@ func GetBreakdownForPeriod(userID int64, transType string, start, end time.Time,
 
 // CreateUser creates a new user
 func CreateUser(user *models.User) error {
-	stmt, err := db.Prepare("INSERT INTO users(username, email, password, created_at, updated_at) VALUES(?, ?, ?, ?, ?)")
+	stmt, err := db.Prepare("INSERT INTO users(username, email, avatar, password, created_at, updated_at) VALUES(?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 
 	now := time.Now()
-	res, err := stmt.Exec(user.Username, user.Email, user.Password, now, now)
+	res, err := stmt.Exec(user.Username, user.Email, user.Avatar, user.Password, now, now)
 	if err != nil {
 		return err
 	}
@@ -224,8 +229,8 @@ func CreateUser(user *models.User) error {
 // GetUserByUsername retrieves a user by username
 func GetUserByUsername(username string) (*models.User, error) {
 	var user models.User
-	err := db.QueryRow("SELECT id, username, email, password, created_at, updated_at FROM users WHERE username = ?", username).
-		Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.CreatedAt, &user.UpdatedAt)
+	err := db.QueryRow("SELECT id, username, email, avatar, password, created_at, updated_at FROM users WHERE username = ?", username).
+		Scan(&user.ID, &user.Username, &user.Email, &user.Avatar, &user.Password, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -235,8 +240,8 @@ func GetUserByUsername(username string) (*models.User, error) {
 // GetUserByEmail retrieves a user by email
 func GetUserByEmail(email string) (*models.User, error) {
 	var user models.User
-	err := db.QueryRow("SELECT id, username, email, password, created_at, updated_at FROM users WHERE email = ?", email).
-		Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.CreatedAt, &user.UpdatedAt)
+	err := db.QueryRow("SELECT id, username, email, avatar, password, created_at, updated_at FROM users WHERE email = ?", email).
+		Scan(&user.ID, &user.Username, &user.Email, &user.Avatar, &user.Password, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -246,10 +251,46 @@ func GetUserByEmail(email string) (*models.User, error) {
 // GetUserByID retrieves a user by ID
 func GetUserByID(id int64) (*models.User, error) {
 	var user models.User
-	err := db.QueryRow("SELECT id, username, email, password, created_at, updated_at FROM users WHERE id = ?", id).
-		Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.CreatedAt, &user.UpdatedAt)
+	err := db.QueryRow("SELECT id, username, email, avatar, password, created_at, updated_at FROM users WHERE id = ?", id).
+		Scan(&user.ID, &user.Username, &user.Email, &user.Avatar, &user.Password, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
 	return &user, nil
+}
+
+// UpdateUserAvatar updates a user's avatar
+func UpdateUserAvatar(userID int64, avatar string) error {
+	stmt, err := db.Prepare("UPDATE users SET avatar = ?, updated_at = ? WHERE id = ?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(avatar, time.Now(), userID)
+	return err
+}
+
+// UpdateUserPassword updates a user's password
+func UpdateUserPassword(userID int64, newPassword string) error {
+	stmt, err := db.Prepare("UPDATE users SET password = ?, updated_at = ? WHERE id = ?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(newPassword, time.Now(), userID)
+	return err
+}
+
+// UpdateUserEmail updates a user's email
+func UpdateUserEmail(userID int64, email string) error {
+	stmt, err := db.Prepare("UPDATE users SET email = ?, updated_at = ? WHERE id = ?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(email, time.Now(), userID)
+	return err
 }

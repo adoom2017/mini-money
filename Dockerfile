@@ -30,7 +30,7 @@ FROM alpine:latest
 RUN apk --no-cache add ca-certificates sqlite
 
 # 设置工作目录
-WORKDIR /root/
+WORKDIR /app/
 
 # 从构建阶段复制可执行文件
 COPY --from=builder /app/main .
@@ -39,7 +39,10 @@ COPY --from=builder /app/main .
 COPY --from=builder /app/frontend ./frontend
 
 # 创建数据目录
-RUN mkdir -p /root/data
+RUN mkdir -p /app/data
+
+# 确保数据目录有写权限
+RUN chmod 755 /app/data
 
 # 暴露端口
 EXPOSE 8080

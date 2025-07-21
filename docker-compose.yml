@@ -8,9 +8,9 @@ services:
       - "8080"  # 只在Docker网络内部暴露端口
     volumes:
       # 持久化数据库文件
-      - ./data:/root/data
+      - ./data:/app/data
       # 如果需要自定义配置，可以挂载配置文件
-      # - ./config:/root/config
+      # - ./config:/app/config
     environment:
       - GIN_MODE=release
       - PORT=8080

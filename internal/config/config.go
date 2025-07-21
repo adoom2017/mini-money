@@ -25,7 +25,7 @@ func GetDefaultConfig() *Config {
 			Host: "localhost",
 		},
 		Database: DatabaseConfig{
-			Path: "./finance.db",
+			Path: "./data/finance.db",
 		},
 	}
 }

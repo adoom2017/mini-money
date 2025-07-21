@@ -7,7 +7,8 @@ type User struct {
 	ID        int64     `json:"id"`
 	Username  string    `json:"username"`
 	Email     string    `json:"email"`
-	Password  string    `json:"-"` // 密码不会在 JSON 中返回
+	Avatar    string    `json:"avatar"` // 头像URL或base64数据
+	Password  string    `json:"-"`      // 密码不会在 JSON 中返回
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }
@@ -26,6 +27,23 @@ type RegisterRequest struct {
 	Password string `json:"password" binding:"required,min=6"`
 }
 
+// UpdateAvatarRequest represents avatar update request data
+type UpdateAvatarRequest struct {
+	Avatar string `json:"avatar" binding:"required"`
+}
+
+// UpdatePasswordRequest represents password update request data
+type UpdatePasswordRequest struct {
+	CurrentPassword string `json:"currentPassword" binding:"required"`
+	NewPassword     string `json:"newPassword" binding:"required,min=6"`
+}
+
+// UpdateEmailRequest represents email update request data
+type UpdateEmailRequest struct {
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required"`
+}
+
 // AuthResponse represents authentication response
 type AuthResponse struct {
 	Token string       `json:"token"`
@@ -37,6 +55,7 @@ type UserResponse struct {
 	ID       int64  `json:"id"`
 	Username string `json:"username"`
 	Email    string `json:"email"`
+	Avatar   string `json:"avatar"`
 }
 
 // Transaction represents a financial transaction

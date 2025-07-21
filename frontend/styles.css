@@ -8,6 +8,35 @@ body {
     max-width: 960px; /* Increased width for stats page */
 }
 
+/* User Info Styles */
+.user-info {
+    transition: all 0.2s ease;
+}
+
+.user-info:hover {
+    background-color: #e9ecef !important;
+    border-color: #adb5bd !important;
+}
+
+/* Responsive adjustments for user info */
+@media (max-width: 768px) {
+    .user-info {
+        display: none !important; /* Hide on mobile to save space */
+    }
+}
+
+@media (max-width: 576px) {
+    .d-flex.justify-content-between.align-items-center {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+    
+    .d-flex.align-items-center {
+        justify-content: space-between;
+        margin-top: 0.5rem;
+    }
+}
+
 /* Main Navigation */
 .main-nav {
     margin-bottom: 1.5rem;

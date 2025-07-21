@@ -171,10 +171,156 @@ func Register(c *gin.Context) {
 			ID:       user.ID,
 			Username: user.Username,
 			Email:    user.Email,
+			Avatar:   user.Avatar,
 		},
 	}
 
 	c.JSON(http.StatusCreated, response)
+}
+
+// GetUserProfile handles GET /api/user/profile
+func GetUserProfile(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+
+	user, err := database.GetUserByID(userID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	response := models.UserResponse{
+		ID:       user.ID,
+		Username: user.Username,
+		Email:    user.Email,
+		Avatar:   user.Avatar,
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
+// UpdateUserAvatar handles PUT /api/user/avatar
+func UpdateUserAvatar(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+
+	var req models.UpdateAvatarRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Update avatar in database
+	if err := database.UpdateUserAvatar(userID, req.Avatar); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update avatar"})
+		return
+	}
+
+	// Get updated user info
+	user, err := database.GetUserByID(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user info"})
+		return
+	}
+
+	response := models.UserResponse{
+		ID:       user.ID,
+		Username: user.Username,
+		Email:    user.Email,
+		Avatar:   user.Avatar,
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
+// UpdateUserPassword handles PUT /api/user/password
+func UpdateUserPassword(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+
+	var req models.UpdatePasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Get current user info to verify current password
+	user, err := database.GetUserByID(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user info"})
+		return
+	}
+
+	// Verify current password
+	if !auth.CheckPassword(req.CurrentPassword, user.Password) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Current password is incorrect"})
+		return
+	}
+
+	// Hash new password
+	hashedPassword, err := auth.HashPassword(req.NewPassword)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
+		return
+	}
+
+	// Update password in database
+	if err := database.UpdateUserPassword(userID, hashedPassword); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update password"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Password updated successfully"})
+}
+
+// UpdateUserEmail handles PUT /api/user/email
+func UpdateUserEmail(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+
+	var req models.UpdateEmailRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Get current user info to verify password
+	user, err := database.GetUserByID(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user info"})
+		return
+	}
+
+	// Verify password
+	if !auth.CheckPassword(req.Password, user.Password) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Password is incorrect"})
+		return
+	}
+
+	// Check if email is already in use by another user
+	existingUser, err := database.GetUserByEmail(req.Email)
+	if err == nil && existingUser.ID != userID {
+		c.JSON(http.StatusConflict, gin.H{"error": "Email is already in use"})
+		return
+	}
+
+	// Update email in database
+	if err := database.UpdateUserEmail(userID, req.Email); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update email"})
+		return
+	}
+
+	// Get updated user info
+	updatedUser, err := database.GetUserByID(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get updated user info"})
+		return
+	}
+
+	response := models.UserResponse{
+		ID:       updatedUser.ID,
+		Username: updatedUser.Username,
+		Email:    updatedUser.Email,
+		Avatar:   updatedUser.Avatar,
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
 // Login handles POST /api/auth/login
@@ -222,6 +368,7 @@ func Login(c *gin.Context) {
 			ID:       user.ID,
 			Username: user.Username,
 			Email:    user.Email,
+			Avatar:   user.Avatar,
 		},
 	}
 
