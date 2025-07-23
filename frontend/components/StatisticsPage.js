@@ -10,7 +10,7 @@ const StatisticsPage = ({ lang, t, categoryIconMap, fetchWithAuth }) => {
 
     // 定义固定的颜色数组，确保每个分类都有对应的颜色
     const chartColors = [
-        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', 
+        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
         '#FF9F40', '#C9CBCF', '#E7E9ED', '#7FDBFF', '#F012BE',
         '#FF851B', '#2ECC40', '#FFDC00', '#001F3F', '#85144B'
     ];
@@ -25,9 +25,15 @@ const StatisticsPage = ({ lang, t, categoryIconMap, fetchWithAuth }) => {
         setError(null);
         try {
             const response = await fetchWithAuth(`/api/statistics?year=${year}&month=${month}`);
-            if (!response.ok) throw new Error('Network response was not ok');
-            const data = await response.json();
-            setStats(data);
+            if (response.ok) {
+                const data = await response.json();
+                setStats(data);
+            } else if (response.status === 401) {
+                // 401 is handled by fetchWithAuth, just clear data
+                setStats({ totalIncome: 0, totalExpense: 0, expenseBreakdown: [], incomeBreakdown: [] });
+            } else {
+                throw new Error('Network response was not ok');
+            }
         } catch (err) {
             setError(err.message);
         } finally {
@@ -61,7 +67,7 @@ const StatisticsPage = ({ lang, t, categoryIconMap, fetchWithAuth }) => {
             chartInstance.current.destroy();
             chartInstance.current = null;
         }
-        
+
         // 添加延迟确保DOM元素已经渲染
         const renderChart = () => {
             if (stats && chartRef.current) {
@@ -76,14 +82,14 @@ const StatisticsPage = ({ lang, t, categoryIconMap, fetchWithAuth }) => {
                         borderWidth: 1,
                     }]
                 };
-                
+
                 try {
                     chartInstance.current = new Chart(chartRef.current, {
                         type: 'doughnut',
                         data: chartData,
-                        options: { 
-                            responsive: true, 
-                            maintainAspectRatio: false, 
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
                             plugins: { legend: { display: false } },
                             animation: {
                                 animateRotate: true,
@@ -99,7 +105,7 @@ const StatisticsPage = ({ lang, t, categoryIconMap, fetchWithAuth }) => {
 
         // 使用setTimeout确保DOM完全渲染后再创建图表
         const timeoutId = setTimeout(renderChart, 100);
-        
+
         return () => {
             clearTimeout(timeoutId);
         };
@@ -147,7 +153,7 @@ const StatisticsPage = ({ lang, t, categoryIconMap, fetchWithAuth }) => {
                                 {breakdown.map((item, index) => (
                                     <li className="list-group-item" key={item.categoryKey}>
                                         <div className="category-info">
-                                            <div 
+                                            <div
                                                 className="color-indicator"
                                                 style={{ backgroundColor: getCategoryColor(item.categoryKey, index) }}
                                             ></div>
@@ -170,7 +176,7 @@ const StatisticsPage = ({ lang, t, categoryIconMap, fetchWithAuth }) => {
                             <div className="chart-legend mt-3">
                                 {breakdown.map((item, index) => (
                                     <div key={item.categoryKey} className="legend-item">
-                                        <div 
+                                        <div
                                             className="legend-color"
                                             style={{ backgroundColor: getCategoryColor(item.categoryKey, index) }}
                                         ></div>

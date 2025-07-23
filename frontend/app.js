@@ -66,7 +66,7 @@ const UserSettingsModal = ({ user, onClose, onUpdatePassword, onUpdateEmail, t }
                         {/* Navigation Tabs */}
                         <ul className="nav nav-tabs mb-3">
                             <li className="nav-item">
-                                <a 
+                                <a
                                     className={`nav-link ${activeTab === 'profile' ? 'active' : ''}`}
                                     href="#"
                                     onClick={(e) => { e.preventDefault(); setActiveTab('profile'); }}
@@ -75,7 +75,7 @@ const UserSettingsModal = ({ user, onClose, onUpdatePassword, onUpdateEmail, t }
                                 </a>
                             </li>
                             <li className="nav-item">
-                                <a 
+                                <a
                                     className={`nav-link ${activeTab === 'password' ? 'active' : ''}`}
                                     href="#"
                                     onClick={(e) => { e.preventDefault(); setActiveTab('password'); }}
@@ -84,7 +84,7 @@ const UserSettingsModal = ({ user, onClose, onUpdatePassword, onUpdateEmail, t }
                                 </a>
                             </li>
                             <li className="nav-item">
-                                <a 
+                                <a
                                     className={`nav-link ${activeTab === 'email' ? 'active' : ''}`}
                                     href="#"
                                     onClick={(e) => { e.preventDefault(); setActiveTab('email'); }}
@@ -111,9 +111,9 @@ const UserSettingsModal = ({ user, onClose, onUpdatePassword, onUpdateEmail, t }
                                             border: '3px solid #dee2e6'
                                         }}>
                                             {user.avatar ? (
-                                                <img 
-                                                    src={user.avatar} 
-                                                    alt="Avatar" 
+                                                <img
+                                                    src={user.avatar}
+                                                    alt="Avatar"
                                                     style={{
                                                         width: '100%',
                                                         height: '100%',
@@ -128,20 +128,20 @@ const UserSettingsModal = ({ user, onClose, onUpdatePassword, onUpdateEmail, t }
                                     <div className="col-md-8">
                                         <div className="mb-3">
                                             <label className="form-label">{t('username')}</label>
-                                            <input 
-                                                type="text" 
-                                                className="form-control" 
-                                                value={user.username || ''} 
-                                                disabled 
+                                            <input
+                                                type="text"
+                                                className="form-control"
+                                                value={user.username || ''}
+                                                disabled
                                             />
                                         </div>
                                         <div className="mb-3">
                                             <label className="form-label">{t('email')}</label>
-                                            <input 
-                                                type="email" 
-                                                className="form-control" 
-                                                value={user.email || ''} 
-                                                disabled 
+                                            <input
+                                                type="email"
+                                                className="form-control"
+                                                value={user.email || ''}
+                                                disabled
                                             />
                                         </div>
                                     </div>
@@ -154,9 +154,9 @@ const UserSettingsModal = ({ user, onClose, onUpdatePassword, onUpdateEmail, t }
                             <form onSubmit={handlePasswordSubmit}>
                                 <div className="mb-3">
                                     <label className="form-label">{t('current_password')}</label>
-                                    <input 
-                                        type="password" 
-                                        className="form-control" 
+                                    <input
+                                        type="password"
+                                        className="form-control"
                                         value={passwordData.currentPassword}
                                         onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
                                         required
@@ -165,9 +165,9 @@ const UserSettingsModal = ({ user, onClose, onUpdatePassword, onUpdateEmail, t }
                                 </div>
                                 <div className="mb-3">
                                     <label className="form-label">{t('new_password')}</label>
-                                    <input 
-                                        type="password" 
-                                        className="form-control" 
+                                    <input
+                                        type="password"
+                                        className="form-control"
                                         value={passwordData.newPassword}
                                         onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
                                         required
@@ -177,17 +177,17 @@ const UserSettingsModal = ({ user, onClose, onUpdatePassword, onUpdateEmail, t }
                                 </div>
                                 <div className="mb-3">
                                     <label className="form-label">{t('confirm_password')}</label>
-                                    <input 
-                                        type="password" 
-                                        className="form-control" 
+                                    <input
+                                        type="password"
+                                        className="form-control"
                                         value={passwordData.confirmPassword}
                                         onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
                                         required
                                         disabled={isLoading}
                                     />
                                 </div>
-                                <button 
-                                    type="submit" 
+                                <button
+                                    type="submit"
                                     className="btn btn-primary"
                                     disabled={isLoading}
                                 >
@@ -201,9 +201,9 @@ const UserSettingsModal = ({ user, onClose, onUpdatePassword, onUpdateEmail, t }
                             <form onSubmit={handleEmailSubmit}>
                                 <div className="mb-3">
                                     <label className="form-label">{t('new_email')}</label>
-                                    <input 
-                                        type="email" 
-                                        className="form-control" 
+                                    <input
+                                        type="email"
+                                        className="form-control"
                                         value={emailData.email}
                                         onChange={(e) => setEmailData({...emailData, email: e.target.value})}
                                         required
@@ -212,9 +212,9 @@ const UserSettingsModal = ({ user, onClose, onUpdatePassword, onUpdateEmail, t }
                                 </div>
                                 <div className="mb-3">
                                     <label className="form-label">{t('confirm_password')}</label>
-                                    <input 
-                                        type="password" 
-                                        className="form-control" 
+                                    <input
+                                        type="password"
+                                        className="form-control"
                                         value={emailData.password}
                                         onChange={(e) => setEmailData({...emailData, password: e.target.value})}
                                         placeholder={t('enter_password_to_confirm')}
@@ -222,8 +222,8 @@ const UserSettingsModal = ({ user, onClose, onUpdatePassword, onUpdateEmail, t }
                                         disabled={isLoading}
                                     />
                                 </div>
-                                <button 
-                                    type="submit" 
+                                <button
+                                    type="submit"
                                     className="btn btn-primary"
                                     disabled={isLoading}
                                 >
@@ -250,7 +250,7 @@ const AvatarUploadModal = ({ user, onClose, onUpdateAvatar, t }) => {
                 alert('File size must be less than 5MB');
                 return;
             }
-            
+
             const reader = new FileReader();
             reader.onload = (e) => {
                 setAvatarPreview(e.target.result);
@@ -261,7 +261,7 @@ const AvatarUploadModal = ({ user, onClose, onUpdateAvatar, t }) => {
 
     const handleSave = async () => {
         if (!avatarPreview) return;
-        
+
         setIsUploading(true);
         try {
             await onUpdateAvatar(avatarPreview);
@@ -298,9 +298,9 @@ const AvatarUploadModal = ({ user, onClose, onUpdateAvatar, t }) => {
                                 marginBottom: '1rem'
                             }}>
                                 {avatarPreview ? (
-                                    <img 
-                                        src={avatarPreview} 
-                                        alt="Avatar Preview" 
+                                    <img
+                                        src={avatarPreview}
+                                        alt="Avatar Preview"
                                         style={{
                                             width: '100%',
                                             height: '100%',
@@ -313,9 +313,9 @@ const AvatarUploadModal = ({ user, onClose, onUpdateAvatar, t }) => {
                             </div>
                         </div>
                         <div className="mb-3">
-                            <input 
-                                type="file" 
-                                accept="image/*" 
+                            <input
+                                type="file"
+                                accept="image/*"
                                 onChange={handleFileChange}
                                 className="form-control"
                                 id="avatarUpload"
@@ -326,25 +326,25 @@ const AvatarUploadModal = ({ user, onClose, onUpdateAvatar, t }) => {
                         </div>
                     </div>
                     <div className="modal-footer">
-                        <button 
-                            type="button" 
-                            className="btn btn-outline-danger" 
+                        <button
+                            type="button"
+                            className="btn btn-outline-danger"
                             onClick={handleRemoveAvatar}
                             disabled={isUploading}
                         >
                             Remove Avatar
                         </button>
-                        <button 
-                            type="button" 
-                            className="btn btn-secondary" 
+                        <button
+                            type="button"
+                            className="btn btn-secondary"
                             onClick={onClose}
                             disabled={isUploading}
                         >
                             Cancel
                         </button>
-                        <button 
-                            type="button" 
-                            className="btn btn-primary" 
+                        <button
+                            type="button"
+                            className="btn btn-primary"
                             onClick={handleSave}
                             disabled={isUploading || !avatarPreview}
                         >
@@ -365,6 +365,7 @@ const App = () => {
     const [user, setUser] = React.useState(null);
     const [token, setToken] = React.useState(null);
     const [isInitialized, setIsInitialized] = React.useState(false);
+    const [isAuthChecking, setIsAuthChecking] = React.useState(false);
     const [toast, setToast] = React.useState({ show: false, message: '', type: 'success' });
     const [showAvatarModal, setShowAvatarModal] = React.useState(false);
     const [showSettingsModal, setShowSettingsModal] = React.useState(false);
@@ -380,14 +381,19 @@ const App = () => {
 
     // Check authentication status on app load
     React.useEffect(() => {
-        const savedToken = localStorage.getItem('token');
-        if (savedToken) {
-            setToken(savedToken);
-            setIsAuthenticated(true);
-            // 获取用户信息
-            fetchUserProfile(savedToken);
-        }
-        setIsInitialized(true);
+        const initializeAuth = async () => {
+            const savedToken = localStorage.getItem('token');
+            if (savedToken) {
+                setToken(savedToken);
+                setIsAuthChecking(true);
+                // Token will be validated in the next useEffect when token state changes
+            } else {
+                // No token, user is definitely not authenticated
+                setIsInitialized(true);
+            }
+        };
+
+        initializeAuth();
     }, []);
 
     // Close user menu when clicking outside
@@ -405,34 +411,49 @@ const App = () => {
     }, [showUserMenu]);
 
     // Fetch user profile
-    const fetchUserProfile = async (authToken = token) => {
+    const fetchUserProfile = async () => {
+        if (!token) {
+            console.warn('No token available for user profile fetch');
+            setIsAuthChecking(false);
+            setIsInitialized(true);
+            return;
+        }
+
         try {
-            const response = await fetch('/api/user/profile', {
-                headers: {
-                    'Authorization': `Bearer ${authToken || token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            
+            const response = await fetchWithAuth('/api/user/profile');
+
             if (response.ok) {
                 const userData = await response.json();
                 setUser(userData);
+                setIsAuthenticated(true); // Only set as authenticated when we successfully get user data
+            } else if (response.status === 401) {
+                // Token is invalid, clear it and don't set as authenticated
+                console.warn('Token validation failed - clearing authentication');
+                localStorage.removeItem('token');
+                setToken(null);
+                setUser(null);
+                setIsAuthenticated(false);
             } else {
-                console.error('Failed to fetch user profile');
+                console.error('Failed to fetch user profile:', response.status);
+                // For other errors, also clear authentication to be safe
+                setIsAuthenticated(false);
             }
         } catch (error) {
             console.error('Error fetching user profile:', error);
+            setIsAuthenticated(false);
+        } finally {
+            // Always complete the auth checking process and mark as initialized
+            setIsAuthChecking(false);
+            setIsInitialized(true);
         }
-    };
-
-    // Update user avatar
+    };    // Update user avatar
     const updateAvatar = async (avatarData) => {
         try {
             const response = await fetchWithAuth('/api/user/avatar', {
                 method: 'PUT',
                 body: JSON.stringify({ avatar: avatarData })
             });
-            
+
             if (response.ok) {
                 const userData = await response.json();
                 setUser(userData);
@@ -454,7 +475,7 @@ const App = () => {
                 method: 'PUT',
                 body: JSON.stringify(passwordData)
             });
-            
+
             if (response.ok) {
                 showToast(t('password_updated'), 'success');
             } else {
@@ -474,7 +495,7 @@ const App = () => {
                 method: 'PUT',
                 body: JSON.stringify(emailData)
             });
-            
+
             if (response.ok) {
                 const userData = await response.json();
                 setUser(userData);
@@ -513,26 +534,32 @@ const App = () => {
             'Content-Type': 'application/json',
             ...options.headers,
         };
-        
+
         if (token) {
             headers.Authorization = `Bearer ${token}`;
         }
-        
-        return fetch(url, {
+
+        const response = await fetch(url, {
             ...options,
             headers,
         });
-    };
 
-    const fetchCategories = async () => {
+        // Handle 401 Unauthorized - but only if we had a token and thought we were authenticated
+        // This prevents logout during initial page load when token validation fails
+        if (response.status === 401 && token && isAuthenticated) {
+            logout();
+        }
+
+        return response;
+    };    const fetchCategories = async () => {
         try {
             const response = await fetch('/api/categories');
             if (response.ok) {
                 const data = await response.json();
                 setAllCategories(data);
             }
-        } catch (error) { 
-            console.error('Error fetching categories:', error); 
+        } catch (error) {
+            console.error('Error fetching categories:', error);
         }
     };
 
@@ -541,11 +568,12 @@ const App = () => {
     }, []);
 
     React.useEffect(() => {
-        if (token) {
-            setIsAuthenticated(true);
+        if (token && isAuthChecking) {
+            // Only fetch user profile when we have a token and are in auth checking mode
+            fetchUserProfile();
         }
-    }, [token]);
-    
+    }, [token, isAuthChecking]);
+
     const categoryIconMap = React.useMemo(() => {
         const map = new Map();
         if (allCategories.expense) {
@@ -557,13 +585,13 @@ const App = () => {
         return map;
     }, [allCategories]);
 
-    const commonProps = { 
-        lang, 
-        t, 
-        allCategories, 
-        categoryIconMap, 
+    const commonProps = {
+        lang,
+        t,
+        allCategories,
+        categoryIconMap,
         fetchWithAuth,
-        showToast 
+        showToast
     };
 
     if (!isInitialized) {
@@ -573,6 +601,7 @@ const App = () => {
                     <div className="spinner-border" role="status">
                         <span className="visually-hidden">{t('loading')}</span>
                     </div>
+                    <p className="mt-3 text-muted">{t('initializing_app')}</p>
                 </div>
             </div>
         );
@@ -585,12 +614,12 @@ const App = () => {
     return (
         <div className="container mt-4">
             {/* Toast component */}
-            {toast.show && <Toast 
+            {toast.show && <Toast
                 message={toast.message}
                 type={toast.type}
                 onClose={() => setToast({ show: false, message: '', type: 'success' })}
             />}
-            
+
             {/* Header */}
             <div className="d-flex justify-content-between align-items-center mb-2">
                 <h1 className="mb-0">{t('title')}</h1>
@@ -616,9 +645,9 @@ const App = () => {
                                         border: '2px solid #dee2e6'
                                     }}>
                                         {user.avatar ? (
-                                            <img 
-                                                src={user.avatar} 
-                                                alt="Avatar" 
+                                            <img
+                                                src={user.avatar}
+                                                alt="Avatar"
                                                 style={{
                                                     width: '100%',
                                                     height: '100%',
@@ -654,7 +683,7 @@ const App = () => {
                                     zIndex: 1000
                                 }}>
                                     <div className="py-1">
-                                        <button 
+                                        <button
                                             className="btn btn-link text-start w-100 text-decoration-none px-3 py-2"
                                             onClick={() => {
                                                 setShowUserMenu(false);
@@ -665,7 +694,7 @@ const App = () => {
                                             <span className="me-2">🖼️</span>
                                             {t('change_avatar')}
                                         </button>
-                                        <button 
+                                        <button
                                             className="btn btn-link text-start w-100 text-decoration-none px-3 py-2"
                                             onClick={() => {
                                                 setShowUserMenu(false);
@@ -677,7 +706,7 @@ const App = () => {
                                             {t('user_settings')}
                                         </button>
                                         <hr className="my-1" />
-                                        <button 
+                                        <button
                                             className="btn btn-link text-start w-100 text-decoration-none px-3 py-2"
                                             onClick={() => {
                                                 setShowUserMenu(false);
@@ -693,13 +722,13 @@ const App = () => {
                             )}
                         </div>
                     )}
-                    <button 
+                    <button
                         className="btn btn-outline-secondary btn-sm me-2"
                         onClick={() => setLang(lang === 'en' ? 'zh' : 'en')}
                     >
                         {lang === 'en' ? '中文' : 'English'}
                     </button>
-                    <button 
+                    <button
                         className="btn btn-outline-danger btn-sm"
                         onClick={logout}
                     >
@@ -711,7 +740,7 @@ const App = () => {
             {/* Navigation tabs */}
             <ul className="nav nav-tabs main-nav">
                 <li className="nav-item">
-                    <a 
+                    <a
                         className={`nav-link ${page === 'bookkeeping' ? 'active' : ''}`}
                         href="#"
                         onClick={(e) => { e.preventDefault(); setPage('bookkeeping'); }}
@@ -720,7 +749,7 @@ const App = () => {
                     </a>
                 </li>
                 <li className="nav-item">
-                    <a 
+                    <a
                         className={`nav-link ${page === 'records' ? 'active' : ''}`}
                         href="#"
                         onClick={(e) => { e.preventDefault(); setPage('records'); }}
@@ -729,7 +758,7 @@ const App = () => {
                     </a>
                 </li>
                 <li className="nav-item">
-                    <a 
+                    <a
                         className={`nav-link ${page === 'statistics' ? 'active' : ''}`}
                         href="#"
                         onClick={(e) => { e.preventDefault(); setPage('statistics'); }}
@@ -738,7 +767,7 @@ const App = () => {
                     </a>
                 </li>
                 <li className="nav-item">
-                    <a 
+                    <a
                         className={`nav-link ${page === 'assets' ? 'active' : ''}`}
                         href="#"
                         onClick={(e) => { e.preventDefault(); setPage('assets'); }}
@@ -750,8 +779,8 @@ const App = () => {
 
             {/* Page content */}
             {page === 'bookkeeping' && (
-                window.BookkeepingPage ? 
-                <BookkeepingPage {...commonProps} /> : 
+                window.BookkeepingPage ?
+                <BookkeepingPage {...commonProps} /> :
                 <div className="alert alert-warning">
                     <h5>记账页面组件正在加载中...</h5>
                     <p>当前页面: {page}</p>
@@ -760,24 +789,24 @@ const App = () => {
                 </div>
             )}
             {page === 'records' && (
-                window.RecordsPage ? 
-                <RecordsPage {...commonProps} /> : 
+                window.RecordsPage ?
+                <RecordsPage {...commonProps} /> :
                 <div className="alert alert-info">记录页面组件正在加载中...</div>
             )}
             {page === 'statistics' && (
-                window.StatisticsPage ? 
-                <StatisticsPage {...commonProps} /> : 
+                window.StatisticsPage ?
+                <StatisticsPage {...commonProps} /> :
                 <div className="alert alert-info">统计页面组件正在加载中...</div>
             )}
             {page === 'assets' && (
-                window.AssetsPage ? 
-                <AssetsPage {...commonProps} /> : 
+                window.AssetsPage ?
+                <AssetsPage {...commonProps} /> :
                 <div className="alert alert-info">资产页面组件正在加载中...</div>
             )}
 
             {/* Avatar Upload Modal */}
             {showAvatarModal && (
-                <AvatarUploadModal 
+                <AvatarUploadModal
                     user={user}
                     onClose={() => setShowAvatarModal(false)}
                     onUpdateAvatar={updateAvatar}
@@ -787,7 +816,7 @@ const App = () => {
 
             {/* User Settings Modal */}
             {showSettingsModal && (
-                <UserSettingsModal 
+                <UserSettingsModal
                     user={user}
                     onClose={() => setShowSettingsModal(false)}
                     onUpdatePassword={updatePassword}

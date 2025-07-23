@@ -11,10 +11,17 @@ const RecordsPage = ({ lang, t, allCategories, categoryIconMap, fetchWithAuth })
         setError(null);
         try {
             const response = await fetchWithAuth('/api/transactions');
-            if (!response.ok) throw new Error('Network response was not ok');
-            const data = await response.json();
-            setTransactions(data || []);
-            setFilteredTransactions(data || []);
+            if (response.ok) {
+                const data = await response.json();
+                setTransactions(data || []);
+                setFilteredTransactions(data || []);
+            } else if (response.status === 401) {
+                // 401 is handled by fetchWithAuth, just clear data
+                setTransactions([]);
+                setFilteredTransactions([]);
+            } else {
+                throw new Error('Network response was not ok');
+            }
         } catch (err) {
             setError(err.message);
         } finally {
@@ -28,20 +35,20 @@ const RecordsPage = ({ lang, t, allCategories, categoryIconMap, fetchWithAuth })
 
     React.useEffect(() => {
         let filtered = transactions;
-        
+
         // Filter by type
         if (filterType !== 'all') {
             filtered = filtered.filter(t => t.type === filterType);
         }
-        
+
         // Filter by search term
         if (searchTerm) {
-            filtered = filtered.filter(item => 
+            filtered = filtered.filter(item =>
                 item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 t(item.categoryKey).toLowerCase().includes(searchTerm.toLowerCase())
             );
         }
-        
+
         setFilteredTransactions(filtered);
     }, [transactions, filterType, searchTerm, t]);
 
@@ -90,7 +97,7 @@ const RecordsPage = ({ lang, t, allCategories, categoryIconMap, fetchWithAuth })
                             <span className={`amount ${item.type} fs-5`}>
                                 {item.type === 'income' ? '+' : '-'}{t('currencySymbol')}{item.amount.toFixed(2)}
                             </span>
-                            <button 
+                            <button
                                 className="btn btn-sm btn-outline-danger"
                                 onClick={() => handleDelete(item.id)}
                             >
@@ -108,9 +115,9 @@ const RecordsPage = ({ lang, t, allCategories, categoryIconMap, fetchWithAuth })
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h4>{t('records_title')}</h4>
                 <div className="records-filter">
-                    <select 
-                        className="form-select me-2" 
-                        value={filterType} 
+                    <select
+                        className="form-select me-2"
+                        value={filterType}
                         onChange={e => setFilterType(e.target.value)}
                         disabled={loading}
                     >
@@ -128,11 +135,11 @@ const RecordsPage = ({ lang, t, allCategories, categoryIconMap, fetchWithAuth })
                     />
                 </div>
             </div>
-            
+
             <div className="mb-3 text-muted">
                 {t('all_records')}: {filteredTransactions.length}
             </div>
-            
+
             {renderContent()}
         </div>
     );

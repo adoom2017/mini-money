@@ -17,6 +17,7 @@ const translations = {
         description_placeholder: "Add a note...",
         save: "Save",
         recentTransactions: "Recent Transactions",
+        no_transactions_yet: "No transactions yet",
         // Auth
         login: "Login",
         register: "Register",
@@ -62,6 +63,7 @@ const translations = {
         monthly_summary: "Monthly Summary",
         category_breakdown: "Category Breakdown",
         loading: "Loading...",
+        initializing_app: "Initializing application...",
         error_fetching_stats: "Error fetching statistics.",
         no_data_period: "No data for this period.",
         // Records Page
@@ -98,6 +100,7 @@ const translations = {
         description_placeholder: "添加备注...",
         save: "保存",
         recentTransactions: "最近的交易",
+        no_transactions_yet: "暂无交易记录",
         // Auth
         login: "登录",
         register: "注册",
@@ -143,6 +146,7 @@ const translations = {
         monthly_summary: "本月小结",
         category_breakdown: "分类排行",
         loading: "加载中...",
+        initializing_app: "正在初始化应用...",
         error_fetching_stats: "加载统计数据失败。",
         no_data_period: "该时段无数据。",
         // Records Page

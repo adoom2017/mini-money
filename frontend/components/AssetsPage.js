@@ -28,7 +28,8 @@ const AssetsPage = ({ t, showToast, fetchWithAuth }) => {
                     expanded: false
                 }));
                 setAssets(transformedAssets);
-            } else {
+            } else if (response.status !== 401) {
+                // Don't show error for 401 - it's handled by fetchWithAuth
                 showToast('Failed to load assets', 'error');
             }
         } catch (error) {
@@ -41,8 +42,8 @@ const AssetsPage = ({ t, showToast, fetchWithAuth }) => {
 
     // Toggle asset expansion
     const toggleAsset = (assetId) => {
-        setAssets(assets.map(asset => 
-            asset.id === assetId 
+        setAssets(assets.map(asset =>
+            asset.id === assetId
                 ? { ...asset, expanded: !asset.expanded }
                 : asset
         ));
@@ -213,12 +214,12 @@ const AssetsPage = ({ t, showToast, fetchWithAuth }) => {
                             if (window.assetCharts && window.assetCharts[chartId]) {
                                 window.assetCharts[chartId].destroy();
                             }
-                            
+
                             // Prepare data for chart (sort by date ascending for proper line chart)
                             const sortedRecords = [...asset.records].sort((a, b) => new Date(a.date) - new Date(b.date));
                             const labels = sortedRecords.map(record => record.date);
                             const data = sortedRecords.map(record => record.amount);
-                            
+
                             // Create new chart
                             const chart = new Chart(ctx, {
                                 type: 'line',
@@ -261,7 +262,7 @@ const AssetsPage = ({ t, showToast, fetchWithAuth }) => {
                                     }
                                 }
                             });
-                            
+
                             // Store chart instance for cleanup
                             if (!window.assetCharts) {
                                 window.assetCharts = {};
@@ -272,7 +273,7 @@ const AssetsPage = ({ t, showToast, fetchWithAuth }) => {
                 });
             }, 100);
         }
-        
+
         // Cleanup function
         return () => {
             if (window.assetCharts) {
@@ -289,7 +290,7 @@ const AssetsPage = ({ t, showToast, fetchWithAuth }) => {
     // Render chart container for a single asset
     const renderAssetChart = (asset) => {
         const chartId = `chart-${asset.id}`;
-        
+
         return (
             <div className="chart-container" style={{ height: '300px', position: 'relative' }}>
                 <canvas id={chartId}></canvas>
@@ -313,16 +314,16 @@ const AssetsPage = ({ t, showToast, fetchWithAuth }) => {
                 <div className="d-flex gap-2">
                     {/* View Mode Toggle */}
                     <div className="btn-group" role="group">
-                        <button 
-                            type="button" 
+                        <button
+                            type="button"
                             className={`btn ${viewMode === 'table' ? 'btn-primary' : 'btn-outline-primary'}`}
                             onClick={() => setViewMode('table')}
                             disabled={loading}
                         >
                             <i className="bi bi-table"></i> 表格
                         </button>
-                        <button 
-                            type="button" 
+                        <button
+                            type="button"
                             className={`btn ${viewMode === 'chart' ? 'btn-primary' : 'btn-outline-primary'}`}
                             onClick={() => setViewMode('chart')}
                             disabled={loading || assets.length === 0}
@@ -330,7 +331,7 @@ const AssetsPage = ({ t, showToast, fetchWithAuth }) => {
                             <i className="bi bi-graph-up"></i> 图表
                         </button>
                     </div>
-                    <button 
+                    <button
                         className="btn btn-primary"
                         onClick={() => setShowAddModal(true)}
                         disabled={loading}
@@ -365,7 +366,7 @@ const AssetsPage = ({ t, showToast, fetchWithAuth }) => {
                             {assets.map(asset => (
                                 <div key={asset.id} className="card mb-3">
                                     {/* Asset Header */}
-                                    <div 
+                                    <div
                                         className="card-header d-flex justify-content-between align-items-center cursor-pointer"
                                         onClick={() => toggleAsset(asset.id)}
                                         style={{ cursor: 'pointer' }}
@@ -385,7 +386,7 @@ const AssetsPage = ({ t, showToast, fetchWithAuth }) => {
                                         </div>
                                     </div>
                                     <div className="d-flex align-items-center">
-                                        <button 
+                                        <button
                                             className="btn btn-sm btn-outline-primary me-2"
                                             onClick={(e) => {
                                                 e.stopPropagation();
@@ -396,7 +397,7 @@ const AssetsPage = ({ t, showToast, fetchWithAuth }) => {
                                         >
                                             添加记录
                                         </button>
-                                        <button 
+                                        <button
                                             className="btn btn-sm btn-outline-danger"
                                             onClick={(e) => {
                                                 e.stopPropagation();
@@ -431,7 +432,7 @@ const AssetsPage = ({ t, showToast, fetchWithAuth }) => {
                                                                 <td>{record.date}</td>
                                                                 <td className="fw-bold text-end">{formatCurrency(record.amount)}</td>
                                                                 <td className="text-end">
-                                                                    <button 
+                                                                    <button
                                                                         className="btn btn-sm btn-outline-danger"
                                                                         onClick={() => handleDeleteRecord(asset.id, record.id)}
                                                                     >
@@ -464,7 +465,7 @@ const AssetsPage = ({ t, showToast, fetchWithAuth }) => {
                                                     </small>
                                                 </div>
                                                 <div className="d-flex gap-2">
-                                                    <button 
+                                                    <button
                                                         className="btn btn-sm btn-outline-primary"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
@@ -475,7 +476,7 @@ const AssetsPage = ({ t, showToast, fetchWithAuth }) => {
                                                     >
                                                         添加记录
                                                     </button>
-                                                    <button 
+                                                    <button
                                                         className="btn btn-sm btn-outline-danger"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
@@ -505,18 +506,18 @@ const AssetsPage = ({ t, showToast, fetchWithAuth }) => {
                         <div className="modal-content">
                             <div className="modal-header">
                                 <h5 className="modal-title">添加资产</h5>
-                                <button 
-                                    type="button" 
-                                    className="btn-close" 
+                                <button
+                                    type="button"
+                                    className="btn-close"
                                     onClick={() => setShowAddModal(false)}
                                 ></button>
                             </div>
                             <div className="modal-body">
                                 <div className="mb-3">
                                     <label className="form-label">资产名称</label>
-                                    <input 
-                                        type="text" 
-                                        className="form-control" 
+                                    <input
+                                        type="text"
+                                        className="form-control"
                                         placeholder="例如：招商银行、支付宝等"
                                         value={newAsset.name}
                                         onChange={(e) => setNewAsset({ name: e.target.value })}
@@ -524,16 +525,16 @@ const AssetsPage = ({ t, showToast, fetchWithAuth }) => {
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                <button 
-                                    type="button" 
-                                    className="btn btn-secondary" 
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
                                     onClick={() => setShowAddModal(false)}
                                 >
                                     取消
                                 </button>
-                                <button 
-                                    type="button" 
-                                    className="btn btn-primary" 
+                                <button
+                                    type="button"
+                                    className="btn btn-primary"
                                     onClick={handleAddAsset}
                                 >
                                     添加
@@ -551,27 +552,27 @@ const AssetsPage = ({ t, showToast, fetchWithAuth }) => {
                         <div className="modal-content">
                             <div className="modal-header">
                                 <h5 className="modal-title">添加记录 - {selectedAsset.name}</h5>
-                                <button 
-                                    type="button" 
-                                    className="btn-close" 
+                                <button
+                                    type="button"
+                                    className="btn-close"
                                     onClick={() => setShowRecordModal(false)}
                                 ></button>
                             </div>
                             <div className="modal-body">
                                 <div className="mb-3">
                                     <label className="form-label">日期</label>
-                                    <input 
-                                        type="date" 
-                                        className="form-control" 
+                                    <input
+                                        type="date"
+                                        className="form-control"
                                         value={newRecord.date}
                                         onChange={(e) => setNewRecord({ ...newRecord, date: e.target.value })}
                                     />
                                 </div>
                                 <div className="mb-3">
                                     <label className="form-label">金额</label>
-                                    <input 
-                                        type="number" 
-                                        className="form-control" 
+                                    <input
+                                        type="number"
+                                        className="form-control"
                                         placeholder="输入资产金额"
                                         value={newRecord.amount}
                                         onChange={(e) => setNewRecord({ ...newRecord, amount: e.target.value })}
@@ -581,16 +582,16 @@ const AssetsPage = ({ t, showToast, fetchWithAuth }) => {
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                <button 
-                                    type="button" 
-                                    className="btn btn-secondary" 
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
                                     onClick={() => setShowRecordModal(false)}
                                 >
                                     取消
                                 </button>
-                                <button 
-                                    type="button" 
-                                    className="btn btn-primary" 
+                                <button
+                                    type="button"
+                                    className="btn btn-primary"
                                     onClick={handleAddRecord}
                                 >
                                     添加

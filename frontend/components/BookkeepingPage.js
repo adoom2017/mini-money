@@ -7,17 +7,39 @@ const BookkeepingPage = ({ lang, t, allCategories, categoryIconMap, fetchWithAut
     const fetchTransactions = async () => {
         try {
             const response = await fetchWithAuth('/api/transactions');
-            const data = await response.json();
-            setTransactions(data || []);
-        } catch (error) { console.error('Error fetching transactions:', error); }
+            if (response.ok) {
+                const data = await response.json();
+                setTransactions(Array.isArray(data) ? data : []);
+            } else if (response.status !== 401) {
+                // Don't log 401 as error - it's handled by fetchWithAuth
+                console.error('Failed to fetch transactions:', response.status);
+                setTransactions([]);
+            } else {
+                setTransactions([]);
+            }
+        } catch (error) {
+            console.error('Error fetching transactions:', error);
+            setTransactions([]);
+        }
     };
 
     const fetchSummary = async () => {
         try {
             const response = await fetchWithAuth('/api/summary');
-            const data = await response.json();
-            setSummary(data);
-        } catch (error) { console.error('Error fetching summary:', error); }
+            if (response.ok) {
+                const data = await response.json();
+                setSummary(data || { totalIncome: 0, totalExpense: 0, balance: 0 });
+            } else if (response.status !== 401) {
+                // Don't log 401 as error - it's handled by fetchWithAuth
+                console.error('Failed to fetch summary:', response.status);
+                setSummary({ totalIncome: 0, totalExpense: 0, balance: 0 });
+            } else {
+                setSummary({ totalIncome: 0, totalExpense: 0, balance: 0 });
+            }
+        } catch (error) {
+            console.error('Error fetching summary:', error);
+            setSummary({ totalIncome: 0, totalExpense: 0, balance: 0 });
+        }
     };
 
     const fetchAllData = () => {
@@ -26,7 +48,7 @@ const BookkeepingPage = ({ lang, t, allCategories, categoryIconMap, fetchWithAut
     };
 
     React.useEffect(fetchAllData, []);
-    
+
     React.useEffect(() => {
         if (allCategories.expense.length > 0 && form.categoryKey === '') {
             setForm(prev => ({...prev, categoryKey: allCategories.expense[0].key}));
@@ -65,7 +87,7 @@ const BookkeepingPage = ({ lang, t, allCategories, categoryIconMap, fetchWithAut
             } else { console.error('Failed to add transaction'); }
         } catch (error) { console.error('Error adding transaction:', error); }
     };
-    
+
     const formatDate = (dateString) => {
         const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
         return new Date(dateString).toLocaleDateString(lang === 'zh' ? 'zh-CN' : 'en-US', options);
@@ -110,18 +132,24 @@ const BookkeepingPage = ({ lang, t, allCategories, categoryIconMap, fetchWithAut
             <div className="transaction-list mt-4">
                 <h5 className="mb-3">{t('recentTransactions')}</h5>
                 <div className="list-group">
-                    {transactions.map(item => (
-                        <div key={item.id} className="list-group-item transaction-item">
-                            <div className="d-flex align-items-center">
-                                <div className="me-3 fs-4">{categoryIconMap.get(item.categoryKey) || '❓'}</div>
-                                <div>
-                                    <span className="description">{item.description || t(item.categoryKey)}</span>
-                                    <small className="d-block text-muted">{formatDate(item.date)}</small>
+                    {Array.isArray(transactions) && transactions.length > 0 ? (
+                        transactions.map(item => (
+                            <div key={item.id} className="list-group-item transaction-item">
+                                <div className="d-flex align-items-center">
+                                    <div className="me-3 fs-4">{categoryIconMap.get(item.categoryKey) || '❓'}</div>
+                                    <div>
+                                        <span className="description">{item.description || t(item.categoryKey)}</span>
+                                        <small className="d-block text-muted">{formatDate(item.date)}</small>
+                                    </div>
                                 </div>
+                                <span className={`amount ${item.type}`}>{item.type === 'income' ? '+' : '-'}{t('currencySymbol')}{item.amount.toFixed(2)}</span>
                             </div>
-                            <span className={`amount ${item.type}`}>{item.type === 'income' ? '+' : '-'}{t('currencySymbol')}{item.amount.toFixed(2)}</span>
+                        ))
+                    ) : (
+                        <div className="text-center text-muted py-4">
+                            <p>{t('no_transactions_yet') || 'No transactions yet'}</p>
                         </div>
-                    ))}
+                    )}
                 </div>
             </div>
         </>
