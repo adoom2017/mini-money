@@ -4,6 +4,8 @@ import BookkeepingPage from './components/BookkeepingPage.jsx';
 import RecordsPage from './components/RecordsPage.jsx';
 import StatisticsPage from './components/StatisticsPage.jsx';
 import AssetsPage from './components/AssetsPage.jsx';
+import HomePage from './components/HomePage.jsx';
+import AddTransactionModal from './components/AddTransactionModal.jsx';
 import Toast from './components/Toast.jsx';
 
 // User Settings Modal Component
@@ -367,7 +369,7 @@ const AvatarUploadModal = ({ user, onClose, onUpdateAvatar, t }) => {
 
 const App = () => {
     const [lang, setLang] = React.useState('zh');
-    const [page, setPage] = React.useState('bookkeeping');
+    const [page, setPage] = React.useState('home');
     const [allCategories, setAllCategories] = React.useState({ expense: [], income: [] });
     const [isAuthenticated, setIsAuthenticated] = React.useState(false);
     const [user, setUser] = React.useState(null);
@@ -378,6 +380,7 @@ const App = () => {
     const [showAvatarModal, setShowAvatarModal] = React.useState(false);
     const [showSettingsModal, setShowSettingsModal] = React.useState(false);
     const [showUserMenu, setShowUserMenu] = React.useState(false);
+    const [showAddTransactionModal, setShowAddTransactionModal] = React.useState(false);
 
     // Get translator function
     const t = window.createTranslator ? window.createTranslator(lang) : (key) => key;
@@ -518,13 +521,36 @@ const App = () => {
         }
     };
 
+    // Save transaction
+    const saveTransaction = async (transactionData) => {
+        try {
+            const response = await fetchWithAuth('/api/transactions', {
+                method: 'POST',
+                body: JSON.stringify(transactionData)
+            });
+
+            if (response.ok) {
+                showToast(lang === 'zh' ? '交易添加成功！' : 'Transaction added successfully!', 'success');
+                return true;
+            } else {
+                const errorData = await response.json();
+                showToast(errorData.error || (lang === 'zh' ? '添加交易失败' : 'Failed to add transaction'), 'error');
+                return false;
+            }
+        } catch (error) {
+            console.error('Error saving transaction:', error);
+            showToast(lang === 'zh' ? '添加交易失败' : 'Failed to add transaction', 'error');
+            return false;
+        }
+    };
+
     const login = (authData) => {
         const { token, user } = authData;
         localStorage.setItem('token', token);
         setToken(token);
         setUser(user);
         setIsAuthenticated(true);
-        setPage('bookkeeping'); // 确保登录后设置为记账页面
+        setPage('home'); // 登录后跳转到首页
         showToast(t('login_success'), 'success');
     };
 
@@ -593,11 +619,24 @@ const App = () => {
         return map;
     }, [allCategories]);
 
+    const categoryColorMap = React.useMemo(() => {
+        const map = new Map();
+        if (allCategories.expense) {
+            allCategories.expense.forEach(c => map.set(c.key, c.color));
+        }
+        if (allCategories.income) {
+            allCategories.income.forEach(c => map.set(c.key, c.color));
+        }
+        return map;
+    }, [allCategories]);
+
     const commonProps = {
         lang,
         t,
+        user,
         allCategories,
         categoryIconMap,
+        categoryColorMap,
         fetchWithAuth,
         showToast
     };
@@ -750,6 +789,16 @@ const App = () => {
             <ul className="nav nav-tabs main-nav">
                 <li className="nav-item">
                     <a
+                        className={`nav-link ${page === 'home' ? 'active' : ''}`}
+                        href="#"
+                        onClick={(e) => { e.preventDefault(); setPage('home'); }}
+                    >
+                        <i className="fas fa-home me-2"></i>
+                        {lang === 'zh' ? '首页' : 'Home'}
+                    </a>
+                </li>
+                <li className="nav-item">
+                    <a
                         className={`nav-link ${page === 'bookkeeping' ? 'active' : ''}`}
                         href="#"
                         onClick={(e) => { e.preventDefault(); setPage('bookkeeping'); }}
@@ -787,6 +836,12 @@ const App = () => {
             </ul>
 
             {/* Page content */}
+            {page === 'home' && (
+                <HomePage 
+                    {...commonProps} 
+                    onShowAddTransaction={() => setShowAddTransactionModal(true)}
+                />
+            )}
             {page === 'bookkeeping' && (
                 <BookkeepingPage {...commonProps} />
             )}
@@ -799,6 +854,17 @@ const App = () => {
             {page === 'assets' && (
                 <AssetsPage {...commonProps} />
             )}
+
+            {/* Add Transaction Modal */}
+            <AddTransactionModal
+                show={showAddTransactionModal}
+                onClose={() => setShowAddTransactionModal(false)}
+                onSave={saveTransaction}
+                categoryIconMap={categoryIconMap}
+                categoryColorMap={categoryColorMap}
+                t={t}
+                lang={lang}
+            />
 
             {/* Avatar Upload Modal */}
             {showAvatarModal && (
