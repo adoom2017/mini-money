@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import AuthPage from './components/AuthPage.jsx';
-import BookkeepingPage from './components/BookkeepingPage.jsx';
 import RecordsPage from './components/RecordsPage.jsx';
 import StatisticsPage from './components/StatisticsPage.jsx';
 import AssetsPage from './components/AssetsPage.jsx';
@@ -381,6 +380,7 @@ const App = () => {
     const [showSettingsModal, setShowSettingsModal] = React.useState(false);
     const [showUserMenu, setShowUserMenu] = React.useState(false);
     const [showAddTransactionModal, setShowAddTransactionModal] = React.useState(false);
+    const [refreshTrigger, setRefreshTrigger] = React.useState(0);
 
     // Get translator function
     const t = window.createTranslator ? window.createTranslator(lang) : (key) => key;
@@ -531,6 +531,8 @@ const App = () => {
 
             if (response.ok) {
                 showToast(lang === 'zh' ? '交易添加成功！' : 'Transaction added successfully!', 'success');
+                // 触发首页刷新
+                setRefreshTrigger(prev => prev + 1);
                 return true;
             } else {
                 const errorData = await response.json();
@@ -799,15 +801,6 @@ const App = () => {
                 </li>
                 <li className="nav-item">
                     <a
-                        className={`nav-link ${page === 'bookkeeping' ? 'active' : ''}`}
-                        href="#"
-                        onClick={(e) => { e.preventDefault(); setPage('bookkeeping'); }}
-                    >
-                        {t('bookkeeping')}
-                    </a>
-                </li>
-                <li className="nav-item">
-                    <a
                         className={`nav-link ${page === 'records' ? 'active' : ''}`}
                         href="#"
                         onClick={(e) => { e.preventDefault(); setPage('records'); }}
@@ -840,10 +833,8 @@ const App = () => {
                 <HomePage 
                     {...commonProps} 
                     onShowAddTransaction={() => setShowAddTransactionModal(true)}
+                    refreshTrigger={refreshTrigger}
                 />
-            )}
-            {page === 'bookkeeping' && (
-                <BookkeepingPage {...commonProps} />
             )}
             {page === 'records' && (
                 <RecordsPage {...commonProps} />

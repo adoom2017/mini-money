@@ -42,6 +42,7 @@ func SetupRoutes() *gin.Engine {
 		api.POST("/assets", handlers.CreateAsset)
 		api.DELETE("/assets/:id", handlers.DeleteAsset)
 		api.POST("/assets/:id/records", handlers.CreateAssetRecord)
+		api.PUT("/assets/:id/records/:recordId", handlers.UpdateAssetRecord)
 		api.DELETE("/assets/:id/records/:recordId", handlers.DeleteAssetRecord)
 	}
 

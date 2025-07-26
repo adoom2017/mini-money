@@ -101,7 +101,7 @@ var ExpenseCategories = []Category{
 	{Key: "food", Icon: "🍔"}, {Key: "medical", Icon: "⚕️"}, {Key: "transport", Icon: "🚌"},
 	{Key: "housing", Icon: "🏠"}, {Key: "snacks", Icon: "🍿"}, {Key: "learning", Icon: "🎓"},
 	{Key: "communication", Icon: "📞"}, {Key: "social", Icon: "💬"}, {Key: "investment", Icon: "📈"},
-	{Key: "shopping", Icon: "🛒"},
+	{Key: "shopping", Icon: "🛒"}, {Key: "other", Icon: "📝"},
 }
 
 var IncomeCategories = []Category{

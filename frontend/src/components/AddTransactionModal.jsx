@@ -12,8 +12,9 @@ const AddTransactionModal = ({
     const [formData, setFormData] = useState({
         type: 'expense',
         amount: '',
-        category: 'food',
-        description: ''
+        categoryKey: 'food',
+        description: '',
+        date: new Date().toISOString().split('T')[0] // 默认为今天，格式: YYYY-MM-DD
     });
     const [saving, setSaving] = useState(false);
 
@@ -37,7 +38,7 @@ const AddTransactionModal = ({
         setFormData(prev => ({
             ...prev,
             type,
-            category: categories[0] // 重置为第一个分类
+            categoryKey: categories[0] // 重置为第一个分类
         }));
     };
 
@@ -62,8 +63,9 @@ const AddTransactionModal = ({
             setFormData({
                 type: 'expense',
                 amount: '',
-                category: 'food',
-                description: ''
+                categoryKey: 'food',
+                description: '',
+                date: new Date().toISOString().split('T')[0]
             });
             onClose();
         } catch (error) {
@@ -154,6 +156,22 @@ const AddTransactionModal = ({
                                 </div>
                             </div>
 
+                            {/* 日期选择 */}
+                            <div className="mb-4">
+                                <label htmlFor="date" className="form-label fw-bold">
+                                    {lang === 'zh' ? '交易日期' : 'Transaction Date'}
+                                </label>
+                                <input
+                                    type="date"
+                                    className="form-control"
+                                    id="date"
+                                    name="date"
+                                    value={formData.date}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                            </div>
+
                             {/* 分类选择 */}
                             <div className="mb-4">
                                 <label className="form-label fw-bold">
@@ -165,22 +183,22 @@ const AddTransactionModal = ({
                                             <button
                                                 type="button"
                                                 className={`btn w-100 p-3 ${
-                                                    formData.category === category 
+                                                    formData.categoryKey === category 
                                                         ? 'btn-primary' 
                                                         : 'btn-outline-secondary'
                                                 }`}
-                                                onClick={() => setFormData(prev => ({ ...prev, category }))}
+                                                onClick={() => setFormData(prev => ({ ...prev, categoryKey: category }))}
                                                 style={{
                                                     minHeight: '80px',
-                                                    backgroundColor: formData.category === category 
-                                                        ? categoryColorMap[category] 
+                                                    backgroundColor: formData.categoryKey === category 
+                                                        ? categoryColorMap.get(category) 
                                                         : 'transparent',
-                                                    borderColor: categoryColorMap[category] || '#6c757d',
-                                                    color: formData.category === category ? 'white' : '#495057'
+                                                    borderColor: categoryColorMap.get(category) || '#6c757d',
+                                                    color: formData.categoryKey === category ? 'white' : '#495057'
                                                 }}
                                             >
                                                 <div className="mb-1" style={{ fontSize: '1.5rem' }}>
-                                                    {categoryIconMap[category] || '📝'}
+                                                    {categoryIconMap.get(category) || '📝'}
                                                 </div>
                                                 <small>{t(category)}</small>
                                             </button>

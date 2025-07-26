@@ -132,6 +132,52 @@ func GetAllTransactions(userID int64) ([]models.Transaction, error) {
 	return transactions, nil
 }
 
+// GetFilteredTransactions retrieves filtered transactions from database for a specific user
+func GetFilteredTransactions(userID int64, transactionType, month, search string) ([]models.Transaction, error) {
+	query := "SELECT id, user_id, description, amount, type, category_key, date FROM transactions WHERE user_id = ?"
+	args := []interface{}{userID}
+
+	// Add type filter
+	if transactionType != "" && transactionType != "all" {
+		query += " AND type = ?"
+		args = append(args, transactionType)
+	}
+
+	// Add month filter
+	if month != "" && month != "all" {
+		// month format is "YYYY-MM"
+		// Use LIKE to match the beginning of the date string since Go stores dates as full timestamp
+		monthPattern := month + "%"
+		query += " AND date LIKE ?"
+		args = append(args, monthPattern)
+	}
+
+	// Add search filter
+	if search != "" {
+		query += " AND (description LIKE ? OR category_key LIKE ?)"
+		searchPattern := "%" + search + "%"
+		args = append(args, searchPattern, searchPattern)
+	}
+
+	query += " ORDER BY date DESC"
+
+	rows, err := db.Query(query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	transactions := []models.Transaction{}
+	for rows.Next() {
+		var t models.Transaction
+		if err := rows.Scan(&t.ID, &t.UserID, &t.Description, &t.Amount, &t.Type, &t.CategoryKey, &t.Date); err != nil {
+			return nil, err
+		}
+		transactions = append(transactions, t)
+	}
+	return transactions, nil
+}
+
 // InsertTransaction inserts a new transaction into database
 func InsertTransaction(t *models.Transaction) error {
 	stmt, err := db.Prepare("INSERT INTO transactions(user_id, description, amount, type, category_key, date) VALUES(?, ?, ?, ?, ?, ?)")
@@ -487,4 +533,39 @@ func DeleteAssetRecord(recordID, assetID, userID int64) error {
 
 	_, err = stmt.Exec(recordID, assetID, userID)
 	return err
+}
+
+// UpdateAssetRecord updates a specific asset record
+func UpdateAssetRecord(recordID, assetID, userID int64, date string, amount float64) (*models.AssetRecord, error) {
+	stmt, err := db.Prepare(`
+		UPDATE asset_records 
+		SET date = ?, amount = ?, updated_at = CURRENT_TIMESTAMP
+		WHERE id = ? AND asset_id = ? AND asset_id IN (
+			SELECT id FROM assets WHERE user_id = ?
+		)
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(date, amount, recordID, assetID, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Return the updated record
+	var record models.AssetRecord
+	row := db.QueryRow(`
+		SELECT id, asset_id, date, amount, created_at, updated_at 
+		FROM asset_records 
+		WHERE id = ?
+	`, recordID)
+
+	err = row.Scan(&record.ID, &record.AssetID, &record.Date, &record.Amount, &record.CreatedAt, &record.UpdatedAt)
+	if err != nil {
+		return nil, err
+	}
+
+	return &record, nil
 }

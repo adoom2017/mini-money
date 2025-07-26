@@ -8,7 +8,8 @@ const HomePage = ({
     t, 
     lang,
     user,
-    onShowAddTransaction 
+    onShowAddTransaction,
+    refreshTrigger 
 }) => {
     const [stats, setStats] = useState({
         totalIncome: 0,
@@ -17,6 +18,12 @@ const HomePage = ({
     });
     const [recentTransactions, setRecentTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    // 格式化日期
+    const formatDate = (dateString) => {
+        const options = { year: 'numeric', month: 'short', day: 'numeric' };
+        return new Date(dateString).toLocaleDateString(lang === 'zh' ? 'zh-CN' : 'en-US', options);
+    };
 
     // 获取统计数据
     const fetchStats = async () => {
@@ -75,7 +82,7 @@ const HomePage = ({
         };
         
         loadData();
-    }, []);
+    }, [refreshTrigger]);
 
     // 刷新数据
     const refreshData = () => {
@@ -196,15 +203,14 @@ const HomePage = ({
                                             <tr key={transaction.id}>
                                                 <td>
                                                     <span 
-                                                        className="badge me-2"
+                                                        className="me-2"
                                                         style={{
-                                                            backgroundColor: categoryColorMap[transaction.category] || '#6c757d',
-                                                            color: 'white'
+                                                            fontSize: '1.2rem'
                                                         }}
                                                     >
-                                                        {categoryIconMap[transaction.category] || '📝'}
+                                                        {categoryIconMap.get(transaction.categoryKey) || '📝'}
                                                     </span>
-                                                    {t(transaction.category)}
+                                                    {t(transaction.categoryKey)}
                                                 </td>
                                                 <td>{transaction.description || '-'}</td>
                                                 <td>
@@ -214,7 +220,7 @@ const HomePage = ({
                                                     </span>
                                                 </td>
                                                 <td>
-                                                    {new Date(transaction.created_at).toLocaleDateString(lang === 'zh' ? 'zh-CN' : 'en-US')}
+                                                    {formatDate(transaction.date)}
                                                 </td>
                                                 <td>
                                                     <button

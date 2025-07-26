@@ -17,16 +17,50 @@ import (
 func AddTransaction(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 
-	var newTransaction models.Transaction
-	if err := c.ShouldBindJSON(&newTransaction); err != nil {
+	// Define a struct to handle the incoming JSON with string date
+	var requestData struct {
+		Description string  `json:"description"`
+		Amount      float64 `json:"amount"`
+		Type        string  `json:"type"`
+		CategoryKey string  `json:"categoryKey"`
+		Date        string  `json:"date"` // Accept date as string from frontend
+	}
+
+	if err := c.ShouldBindJSON(&requestData); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Set the user ID for the transaction
-	newTransaction.UserID = userID
-	// Store all times in UTC for consistency
-	newTransaction.Date = time.Now().UTC()
+	// Parse the date from the frontend (format: YYYY-MM-DD)
+	var transactionDate time.Time
+	if requestData.Date != "" {
+		// Parse the date and set time to current time
+		parsedDate, err := time.Parse("2006-01-02", requestData.Date)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format. Expected YYYY-MM-DD"})
+			return
+		}
+		// Set the time to current time but keep the selected date
+		now := time.Now().UTC()
+		transactionDate = time.Date(
+			parsedDate.Year(), parsedDate.Month(), parsedDate.Day(),
+			now.Hour(), now.Minute(), now.Second(), now.Nanosecond(),
+			time.UTC,
+		)
+	} else {
+		// If no date provided, use current time
+		transactionDate = time.Now().UTC()
+	}
+
+	// Create the transaction with parsed data
+	newTransaction := models.Transaction{
+		UserID:      userID,
+		Description: requestData.Description,
+		Amount:      requestData.Amount,
+		Type:        requestData.Type,
+		CategoryKey: requestData.CategoryKey,
+		Date:        transactionDate,
+	}
 
 	if err := database.InsertTransaction(&newTransaction); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -40,7 +74,12 @@ func AddTransaction(c *gin.Context) {
 func GetTransactions(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 
-	transactions, err := database.GetAllTransactions(userID)
+	// Get query parameters
+	transactionType := c.Query("type")
+	month := c.Query("month")
+	search := c.Query("search")
+
+	transactions, err := database.GetFilteredTransactions(userID, transactionType, month, search)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -515,4 +554,44 @@ func DeleteAssetRecord(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Asset record deleted successfully"})
+}
+
+// UpdateAssetRecord handles PUT /api/assets/:id/records/:recordId
+func UpdateAssetRecord(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	assetIDStr := c.Param("id")
+	recordIDStr := c.Param("recordId")
+
+	assetID, err := strconv.ParseInt(assetIDStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid asset ID"})
+		return
+	}
+
+	recordID, err := strconv.ParseInt(recordIDStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid record ID"})
+		return
+	}
+
+	// Verify asset ownership
+	_, err = database.GetAssetByID(assetID, userID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Asset not found"})
+		return
+	}
+
+	var request models.CreateAssetRecordRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	record, err := database.UpdateAssetRecord(recordID, assetID, userID, request.Date, request.Amount)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update asset record: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, record)
 }
