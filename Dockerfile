@@ -1,3 +1,16 @@
+# 使用Node.js镜像构建前端
+FROM node:18-alpine AS frontend-builder
+
+WORKDIR /app/frontend
+# 复制package文件
+COPY frontend/package.json ./
+COPY frontend/package-lock.json ./
+# 安装所有依赖（包括开发依赖，因为构建需要）
+RUN npm ci
+
+COPY frontend/ ./
+RUN npm run build
+
 # 使用官方Go镜像作为构建环境
 FROM golang:1.24-alpine AS builder
 
@@ -35,8 +48,8 @@ WORKDIR /app/
 # 从构建阶段复制可执行文件
 COPY --from=builder /app/main .
 
-# 复制前端资源
-COPY --from=builder /app/frontend ./frontend
+# 复制构建后的前端资源
+COPY --from=frontend-builder /app/frontend/dist ./frontend
 
 # 创建数据目录
 RUN mkdir -p /app/data

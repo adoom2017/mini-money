@@ -1,3 +1,11 @@
+import React, { useState, useEffect } from 'react';
+import AuthPage from './components/AuthPage.jsx';
+import BookkeepingPage from './components/BookkeepingPage.jsx';
+import RecordsPage from './components/RecordsPage.jsx';
+import StatisticsPage from './components/StatisticsPage.jsx';
+import AssetsPage from './components/AssetsPage.jsx';
+import Toast from './components/Toast.jsx';
+
 // User Settings Modal Component
 const UserSettingsModal = ({ user, onClose, onUpdatePassword, onUpdateEmail, t }) => {
     const [activeTab, setActiveTab] = React.useState('profile');
@@ -617,6 +625,7 @@ const App = () => {
             {toast.show && <Toast
                 message={toast.message}
                 type={toast.type}
+                show={toast.show}
                 onClose={() => setToast({ show: false, message: '', type: 'success' })}
             />}
 
@@ -779,29 +788,16 @@ const App = () => {
 
             {/* Page content */}
             {page === 'bookkeeping' && (
-                window.BookkeepingPage ?
-                <BookkeepingPage {...commonProps} /> :
-                <div className="alert alert-warning">
-                    <h5>记账页面组件正在加载中...</h5>
-                    <p>当前页面: {page}</p>
-                    <p>组件状态: BookkeepingPage = {typeof window.BookkeepingPage}</p>
-                    <p>如果一直显示此信息，请检查组件是否正确加载。</p>
-                </div>
+                <BookkeepingPage {...commonProps} />
             )}
             {page === 'records' && (
-                window.RecordsPage ?
-                <RecordsPage {...commonProps} /> :
-                <div className="alert alert-info">记录页面组件正在加载中...</div>
+                <RecordsPage {...commonProps} />
             )}
             {page === 'statistics' && (
-                window.StatisticsPage ?
-                <StatisticsPage {...commonProps} /> :
-                <div className="alert alert-info">统计页面组件正在加载中...</div>
+                <StatisticsPage {...commonProps} />
             )}
             {page === 'assets' && (
-                window.AssetsPage ?
-                <AssetsPage {...commonProps} /> :
-                <div className="alert alert-info">资产页面组件正在加载中...</div>
+                <AssetsPage {...commonProps} />
             )}
 
             {/* Avatar Upload Modal */}
@@ -828,9 +824,5 @@ const App = () => {
     );
 };
 
-// Use React 18 createRoot but keep immediate execution for compatibility
-const rootElement = document.getElementById('root');
-if (rootElement) {
-    const root = ReactDOM.createRoot(rootElement);
-    root.render(<App />);
-}
+// Export the App component as default
+export default App;

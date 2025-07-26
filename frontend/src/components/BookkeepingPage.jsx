@@ -1,3 +1,5 @@
+import React from 'react';
+
 const BookkeepingPage = ({ lang, t, allCategories, categoryIconMap, fetchWithAuth }) => {
     const [transactions, setTransactions] = React.useState([]);
     const [summary, setSummary] = React.useState({ totalIncome: 0, totalExpense: 0, balance: 0 });
@@ -156,5 +158,4 @@ const BookkeepingPage = ({ lang, t, allCategories, categoryIconMap, fetchWithAut
     );
 };
 
-// Export for global access
-window.BookkeepingPage = BookkeepingPage;
+export default BookkeepingPage;

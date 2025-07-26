@@ -11,8 +11,8 @@ import (
 func SetupRoutes() *gin.Engine {
 	router := gin.Default()
 
-	// Serve static files
-	router.Static("/assets", "./frontend")
+	// Serve static files from Vite build output
+	router.Static("/assets", "./frontend/assets")
 
 	// Auth routes (public)
 	auth := router.Group("/api/auth")

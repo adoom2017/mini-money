@@ -5,3 +5,5 @@ build/
 *.log
 *.db
 data/
+node_modules/
+dist/

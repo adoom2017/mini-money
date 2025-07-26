@@ -1,3 +1,5 @@
+import React from 'react';
+
 const RecordsPage = ({ lang, t, allCategories, categoryIconMap, fetchWithAuth }) => {
     const [transactions, setTransactions] = React.useState([]);
     const [filteredTransactions, setFilteredTransactions] = React.useState([]);
@@ -145,5 +147,4 @@ const RecordsPage = ({ lang, t, allCategories, categoryIconMap, fetchWithAuth })
     );
 };
 
-// Export for global access
-window.RecordsPage = RecordsPage;
+export default RecordsPage;

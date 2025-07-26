@@ -1,4 +1,6 @@
-const StatisticsPage = ({ lang, t, categoryIconMap, fetchWithAuth }) => {
+import React from 'react';
+
+const StatisticsPage = ({ lang, t, allCategories, categoryIconMap, fetchWithAuth }) => {
     const [stats, setStats] = React.useState(null);
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState(null);
@@ -211,5 +213,4 @@ const StatisticsPage = ({ lang, t, categoryIconMap, fetchWithAuth }) => {
     );
 };
 
-// Export for global access
-window.StatisticsPage = StatisticsPage;
+export default StatisticsPage;

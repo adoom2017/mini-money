@@ -19,6 +19,15 @@ README.md
 *.db
 data/
 
+# Node.js相关
+node_modules
+npm-debug.log
+.npm
+frontend/node_modules
+frontend/dist
+frontend/.vite
+frontend/.cache
+
 # 构建产物
 main
 mini-money

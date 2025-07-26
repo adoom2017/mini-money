@@ -1,3 +1,5 @@
+import React from 'react';
+
 const AuthPage = ({ lang, t, login, showToast }) => {
     const [isLogin, setIsLogin] = React.useState(true);
     const [form, setForm] = React.useState({
@@ -178,5 +180,4 @@ const AuthPage = ({ lang, t, login, showToast }) => {
     );
 };
 
-// Export for global access
-window.AuthPage = AuthPage;
+export default AuthPage;

@@ -1,3 +1,5 @@
+import React from 'react';
+
 // Toast notification component
 const Toast = ({ message, type, show, onClose }) => {
     React.useEffect(() => {
@@ -28,5 +30,4 @@ const Toast = ({ message, type, show, onClose }) => {
     );
 };
 
-// Export for global access
-window.Toast = Toast;
+export default Toast;

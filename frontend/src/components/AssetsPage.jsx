@@ -1,5 +1,7 @@
 // Assets Page Component
-const AssetsPage = ({ t, showToast, fetchWithAuth }) => {
+import React from 'react';
+
+const AssetsPage = ({ lang, t, fetchWithAuth }) => {
     const [assets, setAssets] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
     const [showAddModal, setShowAddModal] = React.useState(false);
@@ -605,5 +607,4 @@ const AssetsPage = ({ t, showToast, fetchWithAuth }) => {
     );
 };
 
-// Export to global scope for use in main app
-window.AssetsPage = AssetsPage;
+export default AssetsPage;
