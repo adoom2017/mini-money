@@ -5,6 +5,7 @@ const RecordsPage = ({ lang, t, allCategories, categoryIconMap, fetchWithAuth, s
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState(null);
     const [searchTerm, setSearchTerm] = React.useState('');
+    const [searchQuery, setSearchQuery] = React.useState(''); // 实际用于搜索的值
     const [currentDate, setCurrentDate] = React.useState(new Date());
     const [selectedDate, setSelectedDate] = React.useState(null);
     const [dayTransactions, setDayTransactions] = React.useState([]);
@@ -25,8 +26,8 @@ const RecordsPage = ({ lang, t, allCategories, categoryIconMap, fetchWithAuth, s
 
             const queryParams = new URLSearchParams();
             queryParams.append('month', monthKey);
-            if (searchTerm) {
-                queryParams.append('search', searchTerm);
+            if (searchQuery) {
+                queryParams.append('search', searchQuery);
             }
 
             const response = await fetchWithAuth(`/api/transactions?${queryParams.toString()}`);
@@ -179,9 +180,27 @@ const RecordsPage = ({ lang, t, allCategories, categoryIconMap, fetchWithAuth, s
         }
     };
 
+    // 处理搜索
+    const handleSearch = () => {
+        setSearchQuery(searchTerm);
+    };
+
+    // 处理回车键搜索
+    const handleSearchKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            handleSearch();
+        }
+    };
+
+    // 清空搜索
+    const handleClearSearch = () => {
+        setSearchTerm('');
+        setSearchQuery('');
+    };
+
     React.useEffect(() => {
         fetchTransactions();
-    }, [currentDate, searchTerm]);
+    }, [currentDate, searchQuery]);
 
     const monthNames = {
         zh: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
@@ -215,14 +234,65 @@ const RecordsPage = ({ lang, t, allCategories, categoryIconMap, fetchWithAuth, s
         <div className="records-card shadow-sm p-4">
             {/* 搜索框 */}
             <div className="mb-4">
-                <input
-                    type="text"
-                    className="form-control"
-                    placeholder={t && t('search_description') ? t('search_description') : '搜索描述...'}
-                    value={searchTerm}
-                    onChange={e => setSearchTerm(e.target.value)}
-                    style={{ maxWidth: '300px' }}
-                />
+                <div className="d-flex justify-content-between align-items-center">
+                    <div className="d-flex align-items-center gap-2">
+                        {searchQuery && (
+                            <small className="text-muted">
+                                搜索: "{searchQuery}"
+                            </small>
+                        )}
+                    </div>
+                    
+                    <div className="d-flex align-items-center gap-2">
+                        <div className="position-relative" style={{ width: '300px' }}>
+                            <input
+                                type="text"
+                                className="form-control pe-5"
+                                placeholder={t && t('search_description') ? t('search_description') : '搜索备注...'}
+                                value={searchTerm}
+                                onChange={e => setSearchTerm(e.target.value)}
+                                onKeyPress={handleSearchKeyPress}
+                                style={{ paddingRight: searchQuery ? '80px' : '40px' }}
+                            />
+                            <button 
+                                type="button" 
+                                className="btn p-0 position-absolute top-50 translate-middle-y"
+                                onClick={handleSearch}
+                                title="搜索"
+                                style={{ 
+                                    right: searchQuery ? '40px' : '10px',
+                                    border: 'none',
+                                    background: 'transparent',
+                                    color: '#6c757d',
+                                    zIndex: 5
+                                }}
+                            >
+                                <svg width="16" height="16" fill="currentColor" className="bi bi-search" viewBox="0 0 16 16">
+                                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85zm-5.442 1.398a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11"/>
+                                </svg>
+                            </button>
+                            {searchQuery && (
+                                <button 
+                                    type="button" 
+                                    className="btn p-0 position-absolute top-50 translate-middle-y"
+                                    onClick={handleClearSearch}
+                                    title="清空搜索"
+                                    style={{ 
+                                        right: '10px',
+                                        border: 'none',
+                                        background: 'transparent',
+                                        color: '#6c757d',
+                                        zIndex: 5
+                                    }}
+                                >
+                                    <svg width="14" height="14" fill="currentColor" className="bi bi-x-lg" viewBox="0 0 16 16">
+                                        <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
+                                    </svg>
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {/* 月份统计 */}
