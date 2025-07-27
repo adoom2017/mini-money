@@ -1222,6 +1222,10 @@ html {
     transition: background-color 0.2s ease;
 }
 
+.calendar-day:hover {
+    background-color: #f8f9fa !important;
+}
+
 .calendar-day:nth-child(7n), .calendar-empty-day:nth-child(7n) {
     border-right: none;
 }
@@ -1253,6 +1257,18 @@ html {
 }
 
 .calendar-day.has-transactions {
+    background-color: #e3f2fd !important;
+}
+
+.calendar-day.today:hover {
+    background-color: #fff3cd !important;
+}
+
+.calendar-day.selected:hover {
+    background-color: #d4edda !important;
+}
+
+.calendar-day.has-transactions:hover {
     background-color: #e3f2fd !important;
 }
 

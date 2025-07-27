@@ -290,23 +290,8 @@ const RecordsPage = ({ lang, t, allCategories, categoryIconMap, fetchWithAuth, s
                         <div
                             key={`day-${index}`}
                             className={`calendar-day ${hasTransactions ? 'has-transactions' : ''} ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}`}
-                            style={{
-                                cursor: 'pointer',
-                                backgroundColor: hasTransactions ? '#e3f2fd' : (isToday ? '#fff3cd' : (isSelected ? '#d4edda' : ''))
-                            }}
+                            style={{ cursor: 'pointer' }}
                             onClick={() => handleDateClick(date)}
-                            onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
-                            onMouseLeave={(e) => {
-                                if (hasTransactions) {
-                                    e.target.style.backgroundColor = '#e3f2fd';
-                                } else if (isToday) {
-                                    e.target.style.backgroundColor = '#fff3cd';
-                                } else if (isSelected) {
-                                    e.target.style.backgroundColor = '#d4edda';
-                                } else {
-                                    e.target.style.backgroundColor = '';
-                                }
-                            }}
                         >
                             <div className="calendar-day-content">
                                 <span className="calendar-date-number">
@@ -331,53 +316,53 @@ const RecordsPage = ({ lang, t, allCategories, categoryIconMap, fetchWithAuth, s
                 })}
             </div>
 
-            {/* 选中日期的交易详情模态框 */}
+            {/* 选中日期的交易详情 */}
             {selectedDate && (
-                <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-                    <div className="modal-dialog modal-lg">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <h5 className="modal-title">
-                                    {selectedDate.getFullYear()}年{selectedDate.getMonth() + 1}月{selectedDate.getDate()}日 交易记录
-                                </h5>
-                                <button
-                                    type="button"
-                                    className="btn-close"
-                                    onClick={() => setSelectedDate(null)}
-                                ></button>
-                            </div>
-                            <div className="modal-body">
-                                {dayTransactions.length === 0 ? (
-                                    <p className="text-center text-muted">当日无交易记录</p>
-                                ) : (
-                                    <div className="list-group">
-                                        {dayTransactions.map(transaction => (
-                                            <div key={transaction.id} className="list-group-item d-flex justify-content-between align-items-center">
-                                                <div className="d-flex align-items-center">
-                                                    <span className="me-3 fs-4">
-                                                        {categoryIconMap.get(transaction.categoryKey) || '❓'}
-                                                    </span>
-                                                    <div>
-                                                        <div className="fw-bold">{transaction.description || (t && t(transaction.categoryKey) ? t(transaction.categoryKey) : transaction.categoryKey)}</div>
-                                                        <small className="text-muted">{t && t(transaction.categoryKey) ? t(transaction.categoryKey) : transaction.categoryKey}</small>
-                                                    </div>
-                                                </div>
-                                                <div className="d-flex align-items-center gap-2">
-                                                    <span className={`fw-bold ${transaction.type === 'income' ? 'text-success' : 'text-danger'}`}>
-                                                        {transaction.type === 'income' ? '+' : '-'}¥{transaction.amount.toFixed(2)}
-                                                    </span>
-                                                    <button
-                                                        className="btn btn-sm btn-outline-danger"
-                                                        onClick={() => handleDeleteTransaction(transaction.id)}
-                                                    >
-                                                        删除
-                                                    </button>
+                <div className="mt-4">
+                    <div className="card">
+                        <div className="card-header d-flex justify-content-between align-items-center">
+                            <h5 className="mb-0">
+                                {selectedDate.getFullYear()}年{selectedDate.getMonth() + 1}月{selectedDate.getDate()}日 交易记录
+                            </h5>
+                            <button
+                                type="button"
+                                className="btn btn-sm btn-outline-secondary"
+                                onClick={() => setSelectedDate(null)}
+                            >
+                                收起
+                            </button>
+                        </div>
+                        <div className="card-body">
+                            {dayTransactions.length === 0 ? (
+                                <p className="text-center text-muted mb-0">当日无交易记录</p>
+                            ) : (
+                                <div className="list-group list-group-flush">
+                                    {dayTransactions.map(transaction => (
+                                        <div key={transaction.id} className="list-group-item d-flex justify-content-between align-items-center px-0">
+                                            <div className="d-flex align-items-center">
+                                                <span className="me-3 fs-4">
+                                                    {categoryIconMap.get(transaction.categoryKey) || '❓'}
+                                                </span>
+                                                <div>
+                                                    <div className="fw-bold">{transaction.description || (t && t(transaction.categoryKey) ? t(transaction.categoryKey) : transaction.categoryKey)}</div>
+                                                    <small className="text-muted">{t && t(transaction.categoryKey) ? t(transaction.categoryKey) : transaction.categoryKey}</small>
                                                 </div>
                                             </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
+                                            <div className="d-flex align-items-center gap-2">
+                                                <span className={`fw-bold ${transaction.type === 'income' ? 'text-success' : 'text-danger'}`}>
+                                                    {transaction.type === 'income' ? '+' : '-'}¥{transaction.amount.toFixed(2)}
+                                                </span>
+                                                <button
+                                                    className="btn btn-sm btn-outline-danger"
+                                                    onClick={() => handleDeleteTransaction(transaction.id)}
+                                                >
+                                                    删除
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
