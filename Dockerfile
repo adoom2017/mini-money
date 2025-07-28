@@ -1,5 +1,5 @@
 # 使用Node.js镜像构建前端
-FROM node:18-alpine AS frontend-builder
+FROM node:lts-alpine AS frontend-builder
 
 WORKDIR /app/frontend
 # 复制package文件

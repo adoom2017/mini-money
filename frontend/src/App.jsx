@@ -805,6 +805,7 @@ const App = () => {
                         href="#"
                         onClick={(e) => { e.preventDefault(); setPage('records'); }}
                     >
+                        <i className="fas fa-list me-2"></i>
                         {t('records')}
                     </a>
                 </li>
@@ -814,6 +815,7 @@ const App = () => {
                         href="#"
                         onClick={(e) => { e.preventDefault(); setPage('statistics'); }}
                     >
+                        <i className="fas fa-chart-bar me-2"></i>
                         {t('statistics')}
                     </a>
                 </li>
@@ -823,6 +825,7 @@ const App = () => {
                         href="#"
                         onClick={(e) => { e.preventDefault(); setPage('assets'); }}
                     >
+                        <i className="fas fa-wallet me-2"></i>
                         {t('assets')}
                     </a>
                 </li>
