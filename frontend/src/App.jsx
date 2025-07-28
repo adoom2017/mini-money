@@ -6,6 +6,7 @@ import AssetsPage from './components/AssetsPage.jsx';
 import HomePage from './components/HomePage.jsx';
 import AddTransactionModal from './components/AddTransactionModal.jsx';
 import Toast from './components/Toast.jsx';
+import UserConfigPage from './components/UserConfigPage.jsx';
 
 // User Settings Modal Component
 const UserSettingsModal = ({ user, onClose, onUpdatePassword, onUpdateEmail, t }) => {
@@ -378,7 +379,7 @@ const App = () => {
     const [toast, setToast] = React.useState({ show: false, message: '', type: 'success' });
     const [showAvatarModal, setShowAvatarModal] = React.useState(false);
     const [showSettingsModal, setShowSettingsModal] = React.useState(false);
-    const [showUserMenu, setShowUserMenu] = React.useState(false);
+    const [showUserConfig, setShowUserConfig] = React.useState(false);
     const [showAddTransactionModal, setShowAddTransactionModal] = React.useState(false);
     const [refreshTrigger, setRefreshTrigger] = React.useState(0);
 
@@ -406,20 +407,6 @@ const App = () => {
 
         initializeAuth();
     }, []);
-
-    // Close user menu when clicking outside
-    React.useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (showUserMenu && !event.target.closest('.user-info')) {
-                setShowUserMenu(false);
-            }
-        };
-
-        if (showUserMenu) {
-            document.addEventListener('click', handleClickOutside);
-            return () => document.removeEventListener('click', handleClickOutside);
-        }
-    }, [showUserMenu]);
 
     // Fetch user profile
     const fetchUserProfile = async () => {
@@ -676,100 +663,70 @@ const App = () => {
                 <div className="d-flex align-items-center">
                     {/* User info */}
                     {user && (
-                        <div className="position-relative">
-                            <div className="user-info me-3 p-2 rounded" style={{
-                                backgroundColor: '#f8f9fa',
-                                border: '1px solid #dee2e6',
-                                cursor: 'pointer'
-                            }} title={t('user_profile')} onClick={() => setShowUserMenu(!showUserMenu)}>
-                                <div className="d-flex align-items-center">
-                                    <div className="avatar-container me-2" style={{
-                                        width: '32px',
-                                        height: '32px',
-                                        borderRadius: '50%',
-                                        overflow: 'hidden',
-                                        backgroundColor: '#e9ecef',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        border: '2px solid #dee2e6'
-                                    }}>
-                                        {user.avatar ? (
-                                            <img
-                                                src={user.avatar}
-                                                alt="Avatar"
-                                                style={{
-                                                    width: '100%',
-                                                    height: '100%',
-                                                    objectFit: 'cover'
-                                                }}
-                                                onError={(e) => {
-                                                    e.target.style.display = 'none';
-                                                    e.target.nextSibling.style.display = 'block';
-                                                }}
-                                            />
-                                        ) : null}
-                                        <span style={{
-                                            fontSize: '1.2em',
-                                            display: user.avatar ? 'none' : 'block'
-                                        }}>👤</span>
+                        <div className="d-flex align-items-center">
+                            {/* User Avatar and Info */}
+                            <div className="d-flex align-items-center me-3 p-2 rounded" style={{
+                                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                border: '1px solid rgba(255, 255, 255, 0.3)',
+                                backdropFilter: 'blur(10px)',
+                                borderRadius: '12px'
+                            }}>
+                                <div className="avatar-container me-2" style={{
+                                    width: '32px',
+                                    height: '32px',
+                                    borderRadius: '50%',
+                                    overflow: 'hidden',
+                                    backgroundColor: '#e9ecef',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    border: '2px solid #dee2e6'
+                                }}>
+                                    {user.avatar ? (
+                                        <img
+                                            src={user.avatar}
+                                            alt="Avatar"
+                                            style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                objectFit: 'cover'
+                                            }}
+                                            onError={(e) => {
+                                                e.target.style.display = 'none';
+                                                e.target.nextSibling.style.display = 'block';
+                                            }}
+                                        />
+                                    ) : null}
+                                    <span style={{
+                                        fontSize: '1.2em',
+                                        display: user.avatar ? 'none' : 'block'
+                                    }}>👤</span>
+                                </div>
+                                <div>
+                                    <div className="fw-bold" style={{fontSize: '0.9em', lineHeight: '1.2'}}>
+                                        {t('welcome')}, {user.username}
                                     </div>
-                                    <div>
-                                        <div className="fw-bold" style={{fontSize: '0.9em', lineHeight: '1.2'}}>
-                                            {t('welcome')}, {user.username}
-                                        </div>
-                                        {user.email && (
-                                            <small className="text-muted" style={{fontSize: '0.75em'}}>
-                                                {user.email}
-                                            </small>
-                                        )}
-                                    </div>
-                                    <span className="ms-2" style={{fontSize: '0.8em'}}>▼</span>
+                                    {user.email && (
+                                        <small className="text-muted" style={{fontSize: '0.75em'}}>
+                                            {user.email}
+                                        </small>
+                                    )}
                                 </div>
                             </div>
-                            {showUserMenu && (
-                                <div className="position-absolute top-100 end-0 bg-white border rounded shadow-sm mt-1" style={{
-                                    minWidth: '200px',
-                                    zIndex: 1000
-                                }}>
-                                    <div className="py-1">
-                                        <button
-                                            className="btn btn-link text-start w-100 text-decoration-none px-3 py-2"
-                                            onClick={() => {
-                                                setShowUserMenu(false);
-                                                setShowAvatarModal(true);
-                                            }}
-                                            style={{color: '#495057'}}
-                                        >
-                                            <span className="me-2">🖼️</span>
-                                            {t('change_avatar')}
-                                        </button>
-                                        <button
-                                            className="btn btn-link text-start w-100 text-decoration-none px-3 py-2"
-                                            onClick={() => {
-                                                setShowUserMenu(false);
-                                                setShowSettingsModal(true);
-                                            }}
-                                            style={{color: '#495057'}}
-                                        >
-                                            <span className="me-2">⚙️</span>
-                                            {t('user_settings')}
-                                        </button>
-                                        <hr className="my-1" />
-                                        <button
-                                            className="btn btn-link text-start w-100 text-decoration-none px-3 py-2"
-                                            onClick={() => {
-                                                setShowUserMenu(false);
-                                                logout();
-                                            }}
-                                            style={{color: '#dc3545'}}
-                                        >
-                                            <span className="me-2">🚪</span>
-                                            {t('logout')}
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
+                            
+                            {/* User Config Button */}
+                            <button
+                                className="btn btn-outline-primary btn-sm me-2"
+                                onClick={() => setShowUserConfig(true)}
+                                title={t('user_settings') || '用户设置'}
+                                style={{
+                                    borderRadius: '10px',
+                                    padding: '0.5rem 0.75rem'
+                                }}
+                            >
+                                <i className="fas fa-cog me-1"></i>
+                                <span className="d-none d-md-inline">{t('settings') || '设置'}</span>
+                            </button>
                         </div>
                     )}
                     <button
@@ -777,12 +734,6 @@ const App = () => {
                         onClick={() => setLang(lang === 'en' ? 'zh' : 'en')}
                     >
                         {lang === 'en' ? '中文' : 'English'}
-                    </button>
-                    <button
-                        className="btn btn-outline-danger btn-sm"
-                        onClick={logout}
-                    >
-                        {t('logout')}
                     </button>
                 </div>
             </div>
@@ -877,6 +828,19 @@ const App = () => {
                     onClose={() => setShowSettingsModal(false)}
                     onUpdatePassword={updatePassword}
                     onUpdateEmail={updateEmail}
+                    t={t}
+                />
+            )}
+
+            {/* User Config Page */}
+            {showUserConfig && (
+                <UserConfigPage
+                    user={user}
+                    onClose={() => setShowUserConfig(false)}
+                    onUpdatePassword={updatePassword}
+                    onUpdateEmail={updateEmail}
+                    onUpdateAvatar={updateAvatar}
+                    onLogout={logout}
                     t={t}
                 />
             )}
