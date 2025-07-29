@@ -74,6 +74,7 @@ const translations = {
         password_min_length: "Password must be at least 6 characters long",
         fill_all_fields: "Please fill in all fields",
         file_too_large: "File size must be less than 2MB",
+        close: "Close",
         // Statistics Page
         statistics_title: "Monthly Statistics",
         select_year: "Select Year",
@@ -175,6 +176,7 @@ const translations = {
         password_min_length: "密码至少需要 6 个字符",
         fill_all_fields: "请填写所有字段",
         file_too_large: "文件大小不能超过 2MB",
+        close: "关闭",
         // Statistics Page
         statistics_title: "月度统计",
         select_year: "选择年份",
