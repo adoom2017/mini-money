@@ -1,4 +1,6 @@
 import React from 'react';
+import ConfirmModal from './ConfirmModal';
+import { useConfirm } from '../utils/useConfirm';
 
 const RecordsPage = ({ lang, t, allCategories, categoryIconMap, fetchWithAuth, showToast }) => {
     const [transactions, setTransactions] = React.useState([]);
@@ -14,6 +16,8 @@ const RecordsPage = ({ lang, t, allCategories, categoryIconMap, fetchWithAuth, s
         totalExpense: 0,
         balance: 0
     });
+    
+    const { confirmState, showConfirm } = useConfirm();
 
     // 获取交易数据
     const fetchTransactions = async () => {
@@ -154,7 +158,15 @@ const RecordsPage = ({ lang, t, allCategories, categoryIconMap, fetchWithAuth, s
 
     // 删除交易
     const handleDeleteTransaction = async (transactionId) => {
-        if (!window.confirm('确定要删除这条记录吗？')) {
+        const confirmed = await showConfirm({
+            title: lang === 'zh' ? '删除记录' : 'Delete Record',
+            message: lang === 'zh' ? '确定要删除这条记录吗？此操作无法撤销。' : 'Are you sure you want to delete this record? This action cannot be undone.',
+            confirmText: lang === 'zh' ? '删除' : 'Delete',
+            cancelText: lang === 'zh' ? '取消' : 'Cancel',
+            confirmType: 'danger'
+        });
+
+        if (!confirmed) {
             return;
         }
 
@@ -437,6 +449,18 @@ const RecordsPage = ({ lang, t, allCategories, categoryIconMap, fetchWithAuth, s
                     </div>
                 </div>
             )}
+            
+            {/* 确认删除对话框 */}
+            <ConfirmModal
+                show={confirmState.show}
+                title={confirmState.title}
+                message={confirmState.message}
+                confirmText={confirmState.confirmText}
+                cancelText={confirmState.cancelText}
+                confirmType={confirmState.confirmType}
+                onConfirm={confirmState.onConfirm}
+                onCancel={confirmState.onCancel}
+            />
         </div>
     );
 };

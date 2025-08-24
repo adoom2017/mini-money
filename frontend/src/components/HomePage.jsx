@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import ConfirmModal from './ConfirmModal';
+import { useConfirm } from '../utils/useConfirm';
 
 const HomePage = ({ 
     categoryIconMap, 
@@ -18,6 +20,8 @@ const HomePage = ({
     });
     const [recentTransactions, setRecentTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
+    
+    const { confirmState, showConfirm } = useConfirm();
 
     // 格式化日期
     const formatDate = (dateString) => {
@@ -54,7 +58,15 @@ const HomePage = ({
 
     // 删除交易
     const deleteTransaction = async (id) => {
-        if (!confirm(t('confirm_delete'))) return;
+        const confirmed = await showConfirm({
+            title: lang === 'zh' ? '删除交易' : 'Delete Transaction',
+            message: lang === 'zh' ? '确定要删除这条交易记录吗？此操作无法撤销。' : 'Are you sure you want to delete this transaction? This action cannot be undone.',
+            confirmText: lang === 'zh' ? '删除' : 'Delete',
+            cancelText: lang === 'zh' ? '取消' : 'Cancel',
+            confirmType: 'danger'
+        });
+
+        if (!confirmed) return;
 
         try {
             const response = await fetchWithAuth(`/api/transactions/${id}`, {
@@ -251,6 +263,18 @@ const HomePage = ({
                     </button>
                 </div>
             </div>
+            
+            {/* 确认删除对话框 */}
+            <ConfirmModal
+                show={confirmState.show}
+                title={confirmState.title}
+                message={confirmState.message}
+                confirmText={confirmState.confirmText}
+                cancelText={confirmState.cancelText}
+                confirmType={confirmState.confirmType}
+                onConfirm={confirmState.onConfirm}
+                onCancel={confirmState.onCancel}
+            />
         </div>
     );
 };
