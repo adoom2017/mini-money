@@ -7,6 +7,11 @@ body {
     padding: 0;
 }
 
+/* 当使用侧边栏布局时，覆盖body背景 */
+body:has(.app-layout-sidebar) {
+    background: #f5f6fa !important;
+}
+
 body::before {
     content: '';
     position: fixed;
@@ -19,6 +24,11 @@ body::before {
     background-size: 40px 40px;
     pointer-events: none;
     z-index: -1;
+}
+
+/* 当使用侧边栏布局时，隐藏body::before */
+body:has(.app-layout-sidebar)::before {
+    display: none !important;
 }
 
 .container {
@@ -2408,4 +2418,1248 @@ html {
 
 .confirm-modal-content[data-type="primary"] .confirm-modal-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+/* ===============================
+   New Homepage Layout Styles
+   =============================== */
+
+.new-homepage-layout {
+    padding: 0;
+    height: 100vh;
+    overflow: hidden;
+    background: #f5f6fa;
+}
+
+.top-section {
+    padding: 20px;
+    background: white;
+    border-bottom: 1px solid #e1e5e9;
+}
+
+.month-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.month-header h2 {
+    color: #2c3e50;
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: 0.5px;
+}
+
+.stats-cards-container {
+    display: flex;
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.stats-card {
+    flex: 1;
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e1e5e9;
+    transition: all 0.3s ease;
+}
+
+.stats-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.stats-card .stats-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 16px;
+    font-size: 20px;
+    color: white;
+}
+
+.expense-card .stats-icon {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+}
+
+.income-card .stats-icon {
+    background: linear-gradient(135deg, #4ecdc4, #44a08d);
+}
+
+.balance-card .stats-icon {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+}
+
+.stats-content {
+    flex: 1;
+}
+
+.stats-label {
+    font-size: 14px;
+    color: #8b949e;
+    margin-bottom: 4px;
+}
+
+.stats-amount {
+    font-size: 24px;
+    font-weight: 600;
+    color: #24292f;
+}
+
+.main-content-area {
+    display: flex;
+    height: calc(100vh - 140px);
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.charts-section {
+    flex: 2;
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    overflow-y: auto;
+    border: 1px solid #e1e5e9;
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #24292f;
+    margin-bottom: 24px;
+}
+
+.line-chart-container {
+    margin-bottom: 40px;
+}
+
+/* 柱状图样式 */
+.bar-chart-container {
+    margin-bottom: 40px;
+}
+
+.bar-chart {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    height: 140px; /* 增加高度以容纳数字标注 */
+    padding: 20px 20px 0 20px; /* 上方留出空间给数字标注 */
+    margin-bottom: 20px;
+}
+
+.bar-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    max-width: 60px;
+    position: relative;
+    height: 100%; /* 确保组容器占满高度 */
+    justify-content: flex-end; /* 让柱子从底部对齐 */
+}
+
+.bars-container {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 80px; /* 固定高度，与maxHeight一致 */
+}
+
+.bar-with-label {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.bar-value {
+    position: absolute;
+    bottom: 100%;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 4px;
+    border-radius: 3px;
+    white-space: nowrap;
+    margin-bottom: 2px;
+    transform: translateX(-50%);
+    left: 50%;
+}
+
+.bar-value.income-value {
+    background: rgba(34, 197, 94, 0.1);
+    color: #15803d;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.bar-value.expense-value {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.bar-group.active .bar-label {
+    color: #0969da;
+    font-weight: 600;
+}
+
+.bar {
+    width: 16px;
+    border-radius: 2px 2px 0 0;
+    position: relative;
+    transition: all 0.3s ease;
+    min-height: 2px; /* 确保即使数据为0也有最小高度 */
+}
+
+.bar.income-bar {
+    background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
+}
+
+.bar.expense-bar {
+    background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
+}
+
+.bar-group:hover .bar {
+    transform: scaleY(1.05);
+}
+
+.bar-label {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 8px;
+    text-align: center;
+}
+
+.chart-legend {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 16px;
+    padding: 0 20px;
+}
+
+.chart-legend .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #374151;
+}
+
+.chart-legend .legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+}
+
+.chart-legend .legend-color.income {
+    background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
+}
+
+.chart-legend .legend-color.expense {
+    background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
+}
+
+/* 现代化图表容器 */
+.modern-chart-container {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f1f5f9;
+}
+
+.modern-pie-chart-container {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f1f5f9;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 20px;
+}
+
+.section-icon {
+    color: #6366f1;
+    font-size: 20px;
+}
+
+/* 无数据消息样式 */
+.no-data-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 120px;
+    color: #6b7280;
+    font-size: 14px;
+    background: #f9fafb;
+    border-radius: 8px;
+    border: 2px dashed #d1d5db;
+    text-align: center;
+    padding: 20px;
+}
+
+/* 现代化图表组件样式 */
+.custom-tooltip {
+    background: rgba(0, 0, 0, 0.8);
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    color: white;
+    font-size: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.tooltip-label {
+    margin: 0 0 4px 0;
+    font-weight: 600;
+}
+
+.tooltip-value, .tooltip-percentage {
+    margin: 2px 0;
+    font-size: 11px;
+    opacity: 0.9;
+}
+
+/* 现代化日历样式 */
+.modern-calendar-container {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    color: #374151;
+}
+
+.calendar-icon {
+    color: #6366f1;
+    font-size: 20px;
+}
+
+.calendar-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.calendar-navigation {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    background: #f8fafc;
+    border-radius: 8px;
+}
+
+.nav-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 6px;
+    background: white;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.nav-button:hover {
+    background: #6366f1;
+    color: white;
+    transform: translateY(-1px);
+}
+
+.current-month {
+    font-size: 16px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.calendar-wrapper {
+    margin-bottom: 16px;
+}
+
+/* React Calendar 自定义样式 */
+.react-calendar {
+    width: 100%;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-family: inherit;
+}
+
+.react-calendar__tile {
+    position: relative;
+    max-width: 100%;
+    padding: 10px 6px;
+    background: none;
+    text-align: center;
+    line-height: 16px;
+    border: none;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.react-calendar__tile:enabled:hover,
+.react-calendar__tile:enabled:focus {
+    background-color: #e0e7ff;
+}
+
+.react-calendar__tile--active {
+    background: #6366f1 !important;
+    color: white;
+}
+
+.react-calendar__tile--now {
+    background: #fef3c7;
+    font-weight: 600;
+}
+
+.calendar-tile-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    margin-top: 2px;
+    font-size: 9px;
+    line-height: 1;
+}
+
+/* 新的数字显示样式 */
+.calendar-income-amount,
+.calendar-expense-amount {
+    padding: 1px 2px;
+    border-radius: 2px;
+    font-size: 8px;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 28px;
+}
+
+.calendar-income-amount {
+    background: rgba(34, 197, 94, 0.1);
+    color: #16a34a;
+}
+
+.calendar-expense-amount {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+}
+
+/* 保留原有的圆点样式 */
+.calendar-income-dot,
+.calendar-expense-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.calendar-income-dot {
+    background: #22c55e;
+}
+
+.calendar-expense-dot {
+    background: #ef4444;
+}
+
+.calendar-selected-info {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.calendar-selected-info h4 {
+    margin: 0 0 12px 0;
+    color: #374151;
+    font-size: 16px;
+}
+
+/* 日历交易明细列表样式 */
+.calendar-transaction-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.calendar-transaction-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.calendar-transaction-item:last-child {
+    border-bottom: none;
+}
+
+.calendar-transaction-item .transaction-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.calendar-transaction-item .transaction-dot.green {
+    background: #22c55e;
+}
+
+.calendar-transaction-item .transaction-dot.red {
+    background: #ef4444;
+}
+
+.calendar-transaction-item .transaction-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.calendar-transaction-item .transaction-category {
+    font-size: 13px;
+    color: #374151;
+    font-weight: 500;
+}
+
+.calendar-transaction-item .transaction-desc {
+    font-size: 12px;
+    color: #6b7280;
+    display: block;
+    margin-top: 2px;
+}
+
+.calendar-transaction-item .transaction-amount {
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    flex-shrink: 0;
+}
+
+.calendar-day-summary {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+}
+
+.calendar-day-summary .summary-item {
+    color: #6b7280;
+}
+
+.calendar-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.calendar-stat-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.calendar-stat-item.income {
+    color: #059669;
+}
+
+.calendar-stat-item.expense {
+    color: #dc2626;
+}
+
+.stat-icon {
+    font-size: 16px;
+}
+
+.calendar-no-data {
+    color: #6b7280;
+    font-style: italic;
+    font-size: 14px;
+}
+
+.calendar-legend {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    padding-top: 12px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.calendar-legend .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+/* 新的图例样式 */
+.legend-income-sample,
+.legend-expense-sample {
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.legend-income-sample {
+    background: rgba(34, 197, 94, 0.1);
+    color: #16a34a;
+}
+
+.legend-expense-sample {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+}
+
+.legend-note {
+    grid-column: 1 / -1;
+    text-align: center;
+    margin-top: 8px;
+}
+
+.legend-note span {
+    font-size: 10px;
+    color: #9ca3af;
+}
+
+.chart-placeholder {
+    height: 200px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.chart-grid {
+    position: relative;
+    height: 120px;
+    width: 100%;
+}
+
+.chart-line {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+    border-radius: 1px;
+}
+
+.chart-points {
+    position: absolute;
+    top: 50px;
+    left: 0;
+    right: 0;
+    height: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chart-point {
+    width: 8px;
+    height: 8px;
+    background: #ff6b6b;
+    border-radius: 50%;
+    position: relative;
+}
+
+.chart-point.active {
+    width: 12px;
+    height: 12px;
+    background: #ff6b6b;
+    box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.3);
+}
+
+.chart-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 16px;
+    font-size: 12px;
+    color: #8b949e;
+}
+
+/* 标签页导航样式 */
+.tab-navigation {
+    display: flex;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    background: #f8f9fa;
+    padding: 4px;
+    gap: 4px;
+}
+
+.tab-button {
+    flex: 1;
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tab-button:hover {
+    background: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+}
+
+.tab-button.active {
+    background: #007bff;
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+}
+
+.pie-chart-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.pie-chart-content {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+}
+
+.pie-chart {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    position: relative;
+    background: conic-gradient(
+        from 0deg,
+        #ff6b6b 0deg 310deg,
+        #feca57 310deg 332deg,
+        #4ecdc4 332deg 350deg,
+        #a8e6cf 350deg 360deg
+    );
+}
+
+.pie-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    background: white;
+    border-radius: 50%;
+}
+
+.pie-legend {
+    flex: 1;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 14px;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.legend-color.orange {
+    background: #ff6b6b;
+}
+
+.legend-color.yellow {
+    background: #feca57;
+}
+
+.legend-color.green {
+    background: #4ecdc4;
+}
+
+.legend-color.light-green {
+    background: #a8e6cf;
+}
+
+.legend-text {
+    flex: 1;
+    color: #24292f;
+}
+
+.legend-percent {
+    color: #8b949e;
+    font-size: 12px;
+}
+
+.chart-footer {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 20px;
+    font-size: 14px;
+    color: #8b949e;
+}
+
+.sidebar-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.today-transactions {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid #e1e5e9;
+    flex: 1;
+    overflow-y: auto;
+    margin-top: 20px;
+}
+
+.transaction-date {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f0f1f2;
+}
+
+.transaction-date:first-child {
+    margin-top: 0;
+}
+
+.transaction-total {
+    color: #8b949e;
+    font-size: 12px;
+}
+
+.transaction-list {
+    margin-bottom: 20px;
+}
+
+.transaction-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 14px;
+}
+
+.transaction-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.transaction-dot.red {
+    background: #ff6b6b;
+}
+
+.transaction-dot.green {
+    background: #4ecdc4;
+}
+
+.transaction-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.transaction-category {
+    color: #24292f;
+    font-weight: 500;
+}
+
+.transaction-desc {
+    color: #8b949e;
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+.transaction-amount {
+    color: #ff6b6b;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+/* 响应式设计 */
+@media (max-width: 1024px) {
+    .main-content-area {
+        flex-direction: column;
+        height: auto;
+    }
+    
+    .charts-section {
+        flex: none;
+    }
+    
+    .sidebar-section {
+        flex: none;
+        flex-direction: row;
+    }
+    
+    .modern-calendar-container,
+    .today-transactions {
+        flex: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .stats-cards-container {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .sidebar-section {
+        flex-direction: column;
+    }
+    
+    .pie-chart-container {
+        flex-direction: column;
+        gap: 20px;
+    }
+}
+
+/* ===============================
+   Sidebar Layout Styles
+   =============================== */
+
+.app-layout-sidebar {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.sidebar-layout {
+    display: flex;
+    height: 100vh;
+    background: #f5f6fa;
+}
+
+.sidebar {
+    width: 240px;
+    background: white;
+    border-right: 1px solid #e1e5e9;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0;
+    flex-shrink: 0;
+}
+
+.sidebar-header {
+    padding: 0 20px 20px;
+    border-bottom: 1px solid #f0f1f2;
+    margin-bottom: 20px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.logo-text {
+    font-size: 18px;
+    font-weight: 600;
+    color: #24292f;
+}
+
+.sidebar-user {
+    padding: 0 20px 20px;
+    border-bottom: 1px solid #f0f1f2;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.user-avatar span {
+    font-size: 18px;
+}
+
+.user-info {
+    flex: 1;
+}
+
+.user-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #24292f;
+    margin-bottom: 2px;
+}
+
+.user-desc {
+    font-size: 12px;
+    color: #8b949e;
+}
+
+.sidebar-nav {
+    flex: 1;
+    padding: 0 12px;
+}
+
+.sidebar-nav .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    margin-bottom: 4px;
+    border-radius: 8px;
+    color: #656d76;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+.sidebar-nav .nav-item:hover {
+    background: #f6f8fa;
+    color: #24292f;
+    text-decoration: none;
+}
+
+.sidebar-nav .nav-item.active {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+.sidebar-nav .nav-item i {
+    width: 16px;
+    font-size: 16px;
+}
+
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.top-bar {
+    background: white;
+    border-bottom: 1px solid #e1e5e9;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.top-bar-left {
+    display: flex;
+    align-items: center;
+}
+
+.account-selector {
+    background: white;
+    border: 1px solid #e1e5e9;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 14px;
+    color: #24292f;
+    outline: none;
+    min-width: 140px;
+}
+
+.account-selector:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+}
+
+.top-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.top-btn {
+    background: white;
+    border: 1px solid #e1e5e9;
+    border-radius: 8px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: #656d76;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.top-btn:hover {
+    background: #f6f8fa;
+    color: #24292f;
+    border-color: #d0d7de;
+}
+
+.add-btn {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border-color: transparent;
+}
+
+.add-btn:hover {
+    background: linear-gradient(135deg, #5a67d8, #6b46c1);
+    color: white;
+}
+
+.reports-btn {
+    padding: 8px;
+    width: 36px;
+    justify-content: center;
+}
+
+.lang-btn {
+    font-size: 12px;
+    padding: 6px 8px;
+}
+
+/* 调整新布局下的主页内容 */
+.sidebar-layout .new-homepage-layout {
+    height: calc(100vh - 60px);
+    background: transparent;
+    padding: 0;
+}
+
+.sidebar-layout .top-section {
+    background: transparent;
+    border-bottom: none;
+    padding: 20px 20px 0;
+}
+
+.sidebar-layout .stats-cards-container {
+    max-width: none;
+    margin: 0;
+}
+
+.sidebar-layout .main-content-area {
+    height: calc(100vh - 180px);
+    padding: 20px;
+    margin: 0;
+    max-width: none;
+}
+
+/* 响应式调整 */
+@media (max-width: 1024px) {
+    .sidebar {
+        width: 200px;
+    }
+    
+    .sidebar-layout .main-content-area {
+        flex-direction: column;
+        height: auto;
+        min-height: calc(100vh - 180px);
+    }
+    
+    .charts-section {
+        flex: none;
+        margin-bottom: 20px;
+    }
+    
+    .sidebar-section {
+        flex: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 60px;
+    }
+    
+    .sidebar .logo-text,
+    .sidebar .user-info,
+    .sidebar-nav .nav-item span {
+        display: none;
+    }
+    
+    .sidebar-user {
+        justify-content: center;
+    }
+    
+    .sidebar-nav .nav-item {
+        justify-content: center;
+        padding: 12px;
+    }
+    
+    .stats-cards-container {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .main-content-area {
+        padding: 10px;
+        gap: 15px;
+    }
 }

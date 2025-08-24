@@ -648,7 +648,7 @@ const App = () => {
     }
 
     return (
-        <div className="container mt-4">
+        <div className={page === 'home' ? 'app-layout-sidebar' : 'container mt-4'}>
             {/* Toast component */}
             {toast.show && <Toast
                 message={toast.message}
@@ -657,147 +657,283 @@ const App = () => {
                 onClose={() => setToast({ show: false, message: '', type: 'success' })}
             />}
 
-            {/* Header */}
-            <div className="d-flex justify-content-between align-items-center mb-2">
-                <h1 className="mb-0">{t('title')}</h1>
-                <div className="d-flex align-items-center">
-                    {/* User info */}
-                    {user && (
-                        <div className="d-flex align-items-center">
-                            {/* User Avatar and Info */}
-                            <div className="d-flex align-items-center me-3 p-2 rounded" style={{
-                                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                                border: '1px solid rgba(255, 255, 255, 0.3)',
-                                backdropFilter: 'blur(10px)',
-                                borderRadius: '12px'
-                            }}>
-                                <div className="avatar-container me-2" style={{
-                                    width: '32px',
-                                    height: '32px',
-                                    borderRadius: '50%',
-                                    overflow: 'hidden',
-                                    backgroundColor: '#e9ecef',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    border: '2px solid #dee2e6'
-                                }}>
-                                    {user.avatar ? (
-                                        <img
-                                            src={user.avatar}
-                                            alt="Avatar"
-                                            style={{
-                                                width: '100%',
-                                                height: '100%',
-                                                objectFit: 'cover'
-                                            }}
-                                            onError={(e) => {
-                                                e.target.style.display = 'none';
-                                                e.target.nextSibling.style.display = 'block';
-                                            }}
-                                        />
-                                    ) : null}
-                                    <span style={{
-                                        fontSize: '1.2em',
-                                        display: user.avatar ? 'none' : 'block'
-                                    }}>👤</span>
-                                </div>
-                                <div>
-                                    <div className="fw-bold" style={{fontSize: '0.9em', lineHeight: '1.2'}}>
-                                        {t('welcome')}, {user.username}
-                                    </div>
-                                    {user.email && (
-                                        <small className="text-muted" style={{fontSize: '0.75em'}}>
-                                            {user.email}
-                                        </small>
-                                    )}
-                                </div>
+            {page === 'home' ? (
+                // 新的侧边栏布局 - 仅用于首页
+                <div className="sidebar-layout">
+                    {/* 左侧导航栏 */}
+                    <div className="sidebar">
+                        {/* Logo */}
+                        <div className="sidebar-header">
+                            <div className="logo">
+                                <div className="logo-icon">📊</div>
+                                <span className="logo-text">极简记账</span>
                             </div>
-                            
-                            {/* User Config Button */}
-                            <button
-                                className="btn btn-outline-primary btn-sm me-2"
-                                onClick={() => setShowUserConfig(true)}
-                                title={t('user_settings') || '用户设置'}
-                                style={{
-                                    borderRadius: '10px',
-                                    padding: '0.5rem 0.75rem'
-                                }}
+                        </div>
+
+                        {/* 用户信息 */}
+                        <div className="sidebar-user">
+                            <div className="user-avatar">
+                                {user.avatar ? (
+                                    <img src={user.avatar} alt="Avatar" />
+                                ) : (
+                                    <span>👤</span>
+                                )}
+                            </div>
+                            <div className="user-info">
+                                <div className="user-name">{user.username}</div>
+                                <div className="user-desc">已使用 3 天</div>
+                            </div>
+                        </div>
+
+                        {/* 导航菜单 */}
+                        <nav className="sidebar-nav">
+                            <a 
+                                href="#" 
+                                className={`nav-item ${page === 'home' ? 'active' : ''}`}
+                                onClick={(e) => { e.preventDefault(); setPage('home'); }}
                             >
-                                <i className="fas fa-cog me-1"></i>
-                                <span className="d-none d-md-inline">{t('settings') || '设置'}</span>
+                                <i className="fas fa-home"></i>
+                                <span>首页</span>
+                            </a>
+                            <a 
+                                href="#" 
+                                className={`nav-item ${page === 'assets' ? 'active' : ''}`}
+                                onClick={(e) => { e.preventDefault(); setPage('assets'); }}
+                            >
+                                <i className="fas fa-wallet"></i>
+                                <span>资产</span>
+                            </a>
+                            <a 
+                                href="#" 
+                                className={`nav-item ${page === 'statistics' ? 'active' : ''}`}
+                                onClick={(e) => { e.preventDefault(); setPage('statistics'); }}
+                            >
+                                <i className="fas fa-chart-bar"></i>
+                                <span>预算</span>
+                            </a>
+                            <a 
+                                href="#" 
+                                className={`nav-item ${page === 'records' ? 'active' : ''}`}
+                                onClick={(e) => { e.preventDefault(); setPage('records'); }}
+                            >
+                                <i className="fas fa-credit-card"></i>
+                                <span>卡片</span>
+                            </a>
+                            <a 
+                                href="#" 
+                                className="nav-item"
+                                onClick={(e) => { e.preventDefault(); /* 周期功能 */ }}
+                            >
+                                <i className="fas fa-calendar-alt"></i>
+                                <span>周期</span>
+                            </a>
+                            <a 
+                                href="#" 
+                                className="nav-item"
+                                onClick={(e) => { e.preventDefault(); /* 存钱功能 */ }}
+                            >
+                                <i className="fas fa-piggy-bank"></i>
+                                <span>存钱</span>
+                            </a>
+                            <a 
+                                href="#" 
+                                className="nav-item"
+                                onClick={(e) => { e.preventDefault(); /* 反馈功能 */ }}
+                            >
+                                <i className="fas fa-comment-alt"></i>
+                                <span>反馈</span>
+                            </a>
+                            <a 
+                                href="#" 
+                                className="nav-item"
+                                onClick={(e) => { e.preventDefault(); setShowUserConfig(true); }}
+                            >
+                                <i className="fas fa-cog"></i>
+                                <span>设置</span>
+                            </a>
+                        </nav>
+                    </div>
+
+                    {/* 主内容区域 */}
+                    <div className="main-content">
+                        {/* 顶部栏 */}
+                        <div className="top-bar">
+                            <div className="top-bar-left">
+                                <select className="account-selector">
+                                    <option>🧸 初始账本</option>
+                                </select>
+                            </div>
+                            <div className="top-bar-right">
+                                <button className="top-btn search-btn">
+                                    <i className="fas fa-search"></i>
+                                    <span>搜索</span>
+                                </button>
+                                <button className="top-btn reports-btn">
+                                    <i className="fas fa-chart-line"></i>
+                                </button>
+                                <button 
+                                    className="top-btn add-btn"
+                                    onClick={() => setShowAddTransactionModal(true)}
+                                >
+                                    <i className="fas fa-plus"></i>
+                                    记一笔
+                                </button>
+                                <button
+                                    className="top-btn lang-btn"
+                                    onClick={() => setLang(lang === 'en' ? 'zh' : 'en')}
+                                >
+                                    {lang === 'en' ? '中文' : 'English'}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* 页面内容 */}
+                        <HomePage 
+                            {...commonProps} 
+                            onShowAddTransaction={() => setShowAddTransactionModal(true)}
+                            refreshTrigger={refreshTrigger}
+                        />
+                    </div>
+                </div>
+            ) : (
+                // 原有的布局 - 用于其他页面
+                <div>
+                    {/* Header */}
+                    <div className="d-flex justify-content-between align-items-center mb-2">
+                        <h1 className="mb-0">{t('title')}</h1>
+                        <div className="d-flex align-items-center">
+                            {/* User info */}
+                            {user && (
+                                <div className="d-flex align-items-center">
+                                    {/* User Avatar and Info */}
+                                    <div className="d-flex align-items-center me-3 p-2 rounded" style={{
+                                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                                        backdropFilter: 'blur(10px)',
+                                        borderRadius: '12px'
+                                    }}>
+                                        <div className="avatar-container me-2" style={{
+                                            width: '32px',
+                                            height: '32px',
+                                            borderRadius: '50%',
+                                            overflow: 'hidden',
+                                            backgroundColor: '#e9ecef',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            border: '2px solid #dee2e6'
+                                        }}>
+                                            {user.avatar ? (
+                                                <img
+                                                    src={user.avatar}
+                                                    alt="Avatar"
+                                                    style={{
+                                                        width: '100%',
+                                                        height: '100%',
+                                                        objectFit: 'cover'
+                                                    }}
+                                                    onError={(e) => {
+                                                        e.target.style.display = 'none';
+                                                        e.target.nextSibling.style.display = 'block';
+                                                    }}
+                                                />
+                                            ) : null}
+                                            <span style={{
+                                                fontSize: '1.2em',
+                                                display: user.avatar ? 'none' : 'block'
+                                            }}>👤</span>
+                                        </div>
+                                        <div>
+                                            <div className="fw-bold" style={{fontSize: '0.9em', lineHeight: '1.2'}}>
+                                                {t('welcome')}, {user.username}
+                                            </div>
+                                            {user.email && (
+                                                <small className="text-muted" style={{fontSize: '0.75em'}}>
+                                                    {user.email}
+                                                </small>
+                                            )}
+                                        </div>
+                                    </div>
+                                    
+                                    {/* User Config Button */}
+                                    <button
+                                        className="btn btn-outline-primary btn-sm me-2"
+                                        onClick={() => setShowUserConfig(true)}
+                                        title={t('user_settings') || '用户设置'}
+                                        style={{
+                                            borderRadius: '10px',
+                                            padding: '0.5rem 0.75rem'
+                                        }}
+                                    >
+                                        <i className="fas fa-cog me-1"></i>
+                                        <span className="d-none d-md-inline">{t('settings') || '设置'}</span>
+                                    </button>
+                                </div>
+                            )}
+                            <button
+                                className="btn btn-outline-secondary btn-sm me-2"
+                                onClick={() => setLang(lang === 'en' ? 'zh' : 'en')}
+                            >
+                                {lang === 'en' ? '中文' : 'English'}
                             </button>
                         </div>
+                    </div>
+
+                    {/* Navigation tabs */}
+                    <ul className="nav nav-tabs main-nav">
+                        <li className="nav-item">
+                            <a
+                                className={`nav-link ${page === 'home' ? 'active' : ''}`}
+                                href="#"
+                                onClick={(e) => { e.preventDefault(); setPage('home'); }}
+                            >
+                                <i className="fas fa-home me-2"></i>
+                                {lang === 'zh' ? '首页' : 'Home'}
+                            </a>
+                        </li>
+                        <li className="nav-item">
+                            <a
+                                className={`nav-link ${page === 'records' ? 'active' : ''}`}
+                                href="#"
+                                onClick={(e) => { e.preventDefault(); setPage('records'); }}
+                            >
+                                <i className="fas fa-list me-2"></i>
+                                {t('records')}
+                            </a>
+                        </li>
+                        <li className="nav-item">
+                            <a
+                                className={`nav-link ${page === 'statistics' ? 'active' : ''}`}
+                                href="#"
+                                onClick={(e) => { e.preventDefault(); setPage('statistics'); }}
+                            >
+                                <i className="fas fa-chart-bar me-2"></i>
+                                {t('statistics')}
+                            </a>
+                        </li>
+                        <li className="nav-item">
+                            <a
+                                className={`nav-link ${page === 'assets' ? 'active' : ''}`}
+                                href="#"
+                                onClick={(e) => { e.preventDefault(); setPage('assets'); }}
+                            >
+                                <i className="fas fa-wallet me-2"></i>
+                                {t('assets')}
+                            </a>
+                        </li>
+                    </ul>
+
+                    {/* Page content */}
+                    {page === 'records' && (
+                        <RecordsPage {...commonProps} />
                     )}
-                    <button
-                        className="btn btn-outline-secondary btn-sm me-2"
-                        onClick={() => setLang(lang === 'en' ? 'zh' : 'en')}
-                    >
-                        {lang === 'en' ? '中文' : 'English'}
-                    </button>
+                    {page === 'statistics' && (
+                        <StatisticsPage {...commonProps} />
+                    )}
+                    {page === 'assets' && (
+                        <AssetsPage {...commonProps} />
+                    )}
                 </div>
-            </div>
-
-            {/* Navigation tabs */}
-            <ul className="nav nav-tabs main-nav">
-                <li className="nav-item">
-                    <a
-                        className={`nav-link ${page === 'home' ? 'active' : ''}`}
-                        href="#"
-                        onClick={(e) => { e.preventDefault(); setPage('home'); }}
-                    >
-                        <i className="fas fa-home me-2"></i>
-                        {lang === 'zh' ? '首页' : 'Home'}
-                    </a>
-                </li>
-                <li className="nav-item">
-                    <a
-                        className={`nav-link ${page === 'records' ? 'active' : ''}`}
-                        href="#"
-                        onClick={(e) => { e.preventDefault(); setPage('records'); }}
-                    >
-                        <i className="fas fa-list me-2"></i>
-                        {t('records')}
-                    </a>
-                </li>
-                <li className="nav-item">
-                    <a
-                        className={`nav-link ${page === 'statistics' ? 'active' : ''}`}
-                        href="#"
-                        onClick={(e) => { e.preventDefault(); setPage('statistics'); }}
-                    >
-                        <i className="fas fa-chart-bar me-2"></i>
-                        {t('statistics')}
-                    </a>
-                </li>
-                <li className="nav-item">
-                    <a
-                        className={`nav-link ${page === 'assets' ? 'active' : ''}`}
-                        href="#"
-                        onClick={(e) => { e.preventDefault(); setPage('assets'); }}
-                    >
-                        <i className="fas fa-wallet me-2"></i>
-                        {t('assets')}
-                    </a>
-                </li>
-            </ul>
-
-            {/* Page content */}
-            {page === 'home' && (
-                <HomePage 
-                    {...commonProps} 
-                    onShowAddTransaction={() => setShowAddTransactionModal(true)}
-                    refreshTrigger={refreshTrigger}
-                />
-            )}
-            {page === 'records' && (
-                <RecordsPage {...commonProps} />
-            )}
-            {page === 'statistics' && (
-                <StatisticsPage {...commonProps} />
-            )}
-            {page === 'assets' && (
-                <AssetsPage {...commonProps} />
             )}
 
             {/* Add Transaction Modal */}

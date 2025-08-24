@@ -133,7 +133,7 @@ func GetAllTransactions(userID int64) ([]models.Transaction, error) {
 }
 
 // GetFilteredTransactions retrieves filtered transactions from database for a specific user
-func GetFilteredTransactions(userID int64, transactionType, month, search string) ([]models.Transaction, error) {
+func GetFilteredTransactions(userID int64, transactionType, month, search, limit, date string) ([]models.Transaction, error) {
 	query := "SELECT id, user_id, description, amount, type, category_key, date FROM transactions WHERE user_id = ?"
 	args := []interface{}{userID}
 
@@ -143,13 +143,18 @@ func GetFilteredTransactions(userID int64, transactionType, month, search string
 		args = append(args, transactionType)
 	}
 
-	// Add month filter
-	if month != "" && month != "all" {
+	// Add date filter (specific date has priority over month)
+	if date != "" {
+		// date format is "YYYY-MM-DD"
+		// SQLite stores Go time.Time as full timestamp like "2025-07-21 13:07:14.189539231 +0000 UTC"
+		// Use LIKE to match the date portion at the beginning
+		query += " AND date LIKE ?"
+		args = append(args, date+" %")
+	} else if month != "" && month != "all" {
 		// month format is "YYYY-MM"
 		// Use LIKE to match the beginning of the date string since Go stores dates as full timestamp
-		monthPattern := month + "%"
 		query += " AND date LIKE ?"
-		args = append(args, monthPattern)
+		args = append(args, month+"-%")
 	}
 
 	// Add search filter
@@ -160,6 +165,12 @@ func GetFilteredTransactions(userID int64, transactionType, month, search string
 	}
 
 	query += " ORDER BY date DESC"
+
+	// Add limit if specified
+	if limit != "" {
+		query += " LIMIT ?"
+		args = append(args, limit)
+	}
 
 	rows, err := db.Query(query, args...)
 	if err != nil {
