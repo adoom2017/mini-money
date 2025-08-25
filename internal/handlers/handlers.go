@@ -449,8 +449,9 @@ func CreateAsset(c *gin.Context) {
 	}
 
 	asset := &models.Asset{
-		UserID: userID,
-		Name:   req.Name,
+		UserID:   userID,
+		Name:     req.Name,
+		Category: req.Category,
 	}
 
 	if err := database.CreateAsset(asset); err != nil {

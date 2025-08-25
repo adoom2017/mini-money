@@ -114,6 +114,7 @@ type Asset struct {
 	ID        int64     `json:"id"`
 	UserID    int64     `json:"userId"`
 	Name      string    `json:"name"`
+	Category  string    `json:"category"` // 资产分类：card, cash, investment
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }
@@ -133,6 +134,7 @@ type AssetWithRecords struct {
 	ID        int64         `json:"id"`
 	UserID    int64         `json:"userId"`
 	Name      string        `json:"name"`
+	Category  string        `json:"category"` // 资产分类：card, cash, investment
 	Records   []AssetRecord `json:"records"`
 	CreatedAt time.Time     `json:"createdAt"`
 	UpdatedAt time.Time     `json:"updatedAt"`
@@ -140,7 +142,8 @@ type AssetWithRecords struct {
 
 // CreateAssetRequest represents request to create a new asset
 type CreateAssetRequest struct {
-	Name string `json:"name" binding:"required,min=1,max=100"`
+	Name     string `json:"name" binding:"required,min=1,max=100"`
+	Category string `json:"category" binding:"required,oneof=card cash investment"`
 }
 
 // CreateAssetRecordRequest represents request to create a new asset record

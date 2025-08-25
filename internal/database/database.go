@@ -80,6 +80,7 @@ func createTable() error {
 		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 		user_id INTEGER NOT NULL,
 		name TEXT NOT NULL,
+		category TEXT NOT NULL DEFAULT 'card',
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 		FOREIGN KEY (user_id) REFERENCES users (id)
@@ -108,6 +109,17 @@ func createTable() error {
 	if err != nil {
 		log.Printf("Error creating asset_records table: %v", err)
 		return err
+	}
+
+	// Add category column to existing assets table if it doesn't exist
+	// This is for database migration - ignore error if column already exists
+	_, _ = db.Exec("ALTER TABLE assets ADD COLUMN category TEXT DEFAULT 'card'")
+
+	// Update existing assets with empty category to have default 'card' category
+	_, err = db.Exec("UPDATE assets SET category = 'card' WHERE category = '' OR category IS NULL")
+	if err != nil {
+		log.Printf("Error updating empty asset categories: %v", err)
+		// Don't return error as this is not critical for app functionality
 	}
 
 	return nil
@@ -393,14 +405,14 @@ func UpdateUserEmail(userID int64, email string) error {
 
 // CreateAsset creates a new asset
 func CreateAsset(asset *models.Asset) error {
-	stmt, err := db.Prepare("INSERT INTO assets(user_id, name, created_at, updated_at) VALUES(?, ?, ?, ?)")
+	stmt, err := db.Prepare("INSERT INTO assets(user_id, name, category, created_at, updated_at) VALUES(?, ?, ?, ?, ?)")
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 
 	now := time.Now()
-	res, err := stmt.Exec(asset.UserID, asset.Name, now, now)
+	res, err := stmt.Exec(asset.UserID, asset.Name, asset.Category, now, now)
 	if err != nil {
 		return err
 	}
@@ -417,7 +429,7 @@ func CreateAsset(asset *models.Asset) error {
 
 // GetAssetsByUserID retrieves all assets for a specific user
 func GetAssetsByUserID(userID int64) ([]models.Asset, error) {
-	rows, err := db.Query("SELECT id, user_id, name, created_at, updated_at FROM assets WHERE user_id = ? ORDER BY created_at DESC", userID)
+	rows, err := db.Query("SELECT id, user_id, name, category, created_at, updated_at FROM assets WHERE user_id = ? ORDER BY created_at DESC", userID)
 	if err != nil {
 		return nil, err
 	}
@@ -426,7 +438,7 @@ func GetAssetsByUserID(userID int64) ([]models.Asset, error) {
 	assets := []models.Asset{}
 	for rows.Next() {
 		var asset models.Asset
-		if err := rows.Scan(&asset.ID, &asset.UserID, &asset.Name, &asset.CreatedAt, &asset.UpdatedAt); err != nil {
+		if err := rows.Scan(&asset.ID, &asset.UserID, &asset.Name, &asset.Category, &asset.CreatedAt, &asset.UpdatedAt); err != nil {
 			return nil, err
 		}
 		assets = append(assets, asset)
@@ -454,6 +466,7 @@ func GetAssetsWithRecordsByUserID(userID int64) ([]models.AssetWithRecords, erro
 			ID:        asset.ID,
 			UserID:    asset.UserID,
 			Name:      asset.Name,
+			Category:  asset.Category,
 			Records:   records,
 			CreatedAt: asset.CreatedAt,
 			UpdatedAt: asset.UpdatedAt,

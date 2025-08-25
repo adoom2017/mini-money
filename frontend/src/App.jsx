@@ -648,7 +648,7 @@ const App = () => {
     }
 
     return (
-        <div className={page === 'home' ? 'app-layout-sidebar' : 'container mt-4'}>
+        <div className={user ? 'app-layout-sidebar' : 'container mt-4'}>
             {/* Toast component */}
             {toast.show && <Toast
                 message={toast.message}
@@ -657,8 +657,8 @@ const App = () => {
                 onClose={() => setToast({ show: false, message: '', type: 'success' })}
             />}
 
-            {page === 'home' ? (
-                // 新的侧边栏布局 - 仅用于首页
+            {user ? (
+                // 侧边栏布局 - 用于所有已登录页面
                 <div className="sidebar-layout">
                     {/* 左侧导航栏 */}
                     <div className="sidebar">
@@ -788,11 +788,33 @@ const App = () => {
                         </div>
 
                         {/* 页面内容 */}
-                        <HomePage 
-                            {...commonProps} 
-                            onShowAddTransaction={() => setShowAddTransactionModal(true)}
-                            refreshTrigger={refreshTrigger}
-                        />
+                        {page === 'home' && (
+                            <HomePage 
+                                {...commonProps} 
+                                onShowAddTransaction={() => setShowAddTransactionModal(true)}
+                                refreshTrigger={refreshTrigger}
+                            />
+                        )}
+                        {page === 'records' && (
+                            <RecordsPage {...commonProps} />
+                        )}
+                        {page === 'statistics' && (
+                            <StatisticsPage {...commonProps} />
+                        )}
+                        {page === 'assets' && (
+                            <AssetsPage {...commonProps} />
+                        )}
+                        {page === 'config' && (
+                            <UserConfigPage
+                                show={true}
+                                onClose={() => setPage('home')}
+                                user={user}
+                                token={token}
+                                onUserUpdate={(updatedUser) => {
+                                    setUser(updatedUser);
+                                }}
+                            />
+                        )}
                     </div>
                 </div>
             ) : (
@@ -922,17 +944,6 @@ const App = () => {
                             </a>
                         </li>
                     </ul>
-
-                    {/* Page content */}
-                    {page === 'records' && (
-                        <RecordsPage {...commonProps} />
-                    )}
-                    {page === 'statistics' && (
-                        <StatisticsPage {...commonProps} />
-                    )}
-                    {page === 'assets' && (
-                        <AssetsPage {...commonProps} />
-                    )}
                 </div>
             )}
 
