@@ -11,6 +11,7 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
     const [newAsset, setNewAsset] = React.useState({ name: '', category: 'card' });
     const [newRecord, setNewRecord] = React.useState({ date: '', amount: '' });
     const [expandedCharts, setExpandedCharts] = React.useState({});
+    const [expandedCategories, setExpandedCategories] = React.useState({});
     const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
     const [assetToDelete, setAssetToDelete] = React.useState(null);
 
@@ -19,6 +20,14 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
         setExpandedCharts(prev => ({
             ...prev,
             [assetId]: !prev[assetId]
+        }));
+    };
+
+    // 切换分类展开状态
+    const toggleCategory = (category) => {
+        setExpandedCategories(prev => ({
+            ...prev,
+            [category]: !prev[category]
         }));
     };
 
@@ -180,11 +189,38 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
         return sortedRecords[0].amount || 0;
     };
 
-    // Get total assets value
+    // Get display amount (negative for credit cards as they are liabilities)
+    const getDisplayAmount = (asset) => {
+        const amount = getLatestAmount(asset.records);
+        // 信用卡作为负债，显示为负值
+        return asset.category === 'card' ? -Math.abs(amount) : amount;
+    };
+
+    // Get total assets value (excluding liabilities)
     const getTotalAssets = () => {
         return assets.reduce((total, asset) => {
-            return total + getLatestAmount(asset.records);
+            // 只计算非信用卡的资产
+            if (asset.category !== 'card') {
+                return total + getLatestAmount(asset.records);
+            }
+            return total;
         }, 0);
+    };
+
+    // Get total liabilities value (credit cards only)
+    const getTotalLiabilities = () => {
+        return assets.reduce((total, asset) => {
+            // 只计算信用卡负债
+            if (asset.category === 'card') {
+                return total + getLatestAmount(asset.records);
+            }
+            return total;
+        }, 0);
+    };
+
+    // Get net worth (total assets - total liabilities)
+    const getNetWorth = () => {
+        return getTotalAssets() - getTotalLiabilities();
     };
 
     // Group assets by category
@@ -237,7 +273,7 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
             {/* 总资产概览 */}
             <div className="total-assets-card">
                 <div className="total-label">净资产</div>
-                <div className="total-amount">{formatCurrency(getTotalAssets())}</div>
+                <div className="total-amount">{formatCurrency(getNetWorth())}</div>
                 <div className="assets-summary">
                     <div className="summary-item">
                         <div className="summary-label">总资产</div>
@@ -245,23 +281,7 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
                     </div>
                     <div className="summary-item">
                         <div className="summary-label">总负债</div>
-                        <div className="summary-amount">0.00</div>
-                    </div>
-                </div>
-                <div className="income-expense-summary">
-                    <div className="summary-item">
-                        <span className="income-icon">📥</span>
-                        <div>
-                            <div className="summary-label">总借入</div>
-                            <div className="summary-amount">0.00</div>
-                        </div>
-                    </div>
-                    <div className="summary-item">
-                        <span className="expense-icon">📤</span>
-                        <div>
-                            <div className="summary-label">总借出</div>
-                            <div className="summary-amount">0.00</div>
-                        </div>
+                        <div className="summary-amount liability-amount">{formatCurrency(getTotalLiabilities())}</div>
                     </div>
                 </div>
             </div>
@@ -283,28 +303,36 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
                 <div className="assets-categories">
                     {Object.entries(groupAssetsByCategory()).map(([category, categoryAssets]) => {
                         const categoryInfo = assetCategories[category] || assetCategories.card;
+                        // 分类总计显示实际金额（信用卡也显示正值）
                         const categoryTotal = categoryAssets.reduce((sum, asset) => sum + getLatestAmount(asset.records), 0);
+                        const isExpanded = expandedCategories[category] === true; // 默认收起
                         
                         return (
                             <div key={category} className="asset-category-section">
-                                <div className="category-header">
+                                <div 
+                                    className="category-header"
+                                    onClick={() => toggleCategory(category)}
+                                    style={{ cursor: 'pointer' }}
+                                >
                                     <div className="category-info">
                                         <span className="category-icon">{categoryInfo.icon}</span>
                                         <span className="category-name">{categoryInfo.name}</span>
                                     </div>
-                                    <div className="category-amount">
+                                    <div className={`category-amount ${category === 'card' ? 'liability-category' : ''}`}>
                                         {formatCurrency(categoryTotal)}
-                                        <span className="expand-icon">▶</span>
+                                        <span className={`expand-icon ${isExpanded ? 'expanded' : ''}`}>▶</span>
                                     </div>
                                 </div>
                                 
-                                <div className="category-assets">
+                                {isExpanded && (
+                                    <div className="category-assets">
                                     {categoryAssets.map(asset => {
-                                        const latestAmount = getLatestAmount(asset.records);
+                                        // 在分类列表中显示实际金额（信用卡也显示正值）
+                                        const displayAmount = getLatestAmount(asset.records);
                                         
                                         return (
                                             <React.Fragment key={asset.id}>
-                                                <div className="asset-item">
+                                                <div className={`asset-item ${asset.category === 'card' ? 'liability-item' : ''}`}>
                                                     <div className="asset-info">
                                                         <span className="asset-icon">{categoryInfo.icon}</span>
                                                         <div className="asset-details">
@@ -318,7 +346,7 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
                                                     </div>
                                                     <div className="asset-actions">
                                                         <div className="asset-amount">
-                                                            {formatCurrency(latestAmount)}
+                                                            {formatCurrency(displayAmount)}
                                                         </div>
                                                         <div className="action-buttons">
                                                             <button 
@@ -352,7 +380,8 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
                                             </React.Fragment>
                                         );
                                     })}
-                                </div>
+                                    </div>
+                                )}
                             </div>
                         );
                     })}

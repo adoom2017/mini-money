@@ -3887,7 +3887,8 @@ html {
     flex: 1;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow-y: auto;
+    height: 100vh;
 }
 
 .top-bar {
@@ -4693,7 +4694,8 @@ html {
     max-width: 100%;
     padding: 1rem;
     background: #f5f6fa;
-    min-height: 100vh;
+    min-height: calc(100vh - 60px); /* 减去顶部导航栏高度 */
+    overflow-y: auto;
 }
 
 /* Page Header */
@@ -4756,10 +4758,14 @@ html {
 }
 
 .assets-summary {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
     margin-bottom: 1.5rem;
-    padding: 0 1rem;
+    padding: 1.5rem 2rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
 }
 
 .income-expense-summary {
@@ -4783,17 +4789,44 @@ html {
 
 .summary-item {
     text-align: center;
+    padding: 1.5rem 1rem;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.summary-item:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
 }
 
 .summary-label {
-    font-size: 0.85rem;
-    opacity: 0.8;
-    margin-bottom: 0.25rem;
+    font-size: 0.9rem;
+    opacity: 0.9;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .summary-amount {
-    font-size: 1.1rem;
-    font-weight: 600;
+    font-size: 1.4rem;
+    font-weight: 700;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* 负债金额样式 */
+.summary-amount.liability-amount {
+    color: #ff6b6b; /* 更柔和的红色表示负债 */
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* 负债项目样式 */
+.summary-item:has(.liability-amount) {
+    border: 1px solid rgba(255, 107, 107, 0.3);
 }
 
 /* Add Asset Button (Legacy - removed from layout) */
@@ -4827,6 +4860,8 @@ html {
 /* Asset Categories */
 .assets-categories {
     margin-bottom: 1rem;
+    max-height: calc(100vh - 200px); /* 为页面头部和底部留出空间 */
+    overflow-y: auto;
 }
 
 .asset-category-section {
@@ -4877,14 +4912,23 @@ html {
     color: #333;
 }
 
+/* 负债分类样式 */
+.category-amount.liability-category {
+    color: #dc3545; /* 红色表示负债 */
+}
+
 .expand-icon {
     font-size: 0.8rem;
     color: #6b7280;
     transition: transform 0.2s ease;
 }
 
-.category-header:hover .expand-icon {
+.expand-icon.expanded {
     transform: rotate(90deg);
+}
+
+.category-header:hover .expand-icon {
+    color: #4b5563;
 }
 
 /* Asset Items */
@@ -4955,6 +4999,15 @@ html {
     color: #333;
     text-align: right;
     min-width: 80px;
+}
+
+/* 负债项目样式 */
+.liability-item .asset-amount {
+    color: #dc3545; /* 红色表示负债 */
+}
+
+.liability-item {
+    border-left: 3px solid #dc3545; /* 左边红色边框标识负债 */
 }
 
 .action-buttons {
@@ -5062,8 +5115,18 @@ html {
     }
     
     .assets-summary, .income-expense-summary {
+        grid-template-columns: 1fr;
         gap: 1rem;
-        padding: 0;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .summary-item {
+        padding: 1rem 0.75rem;
+    }
+    
+    .summary-amount {
+        font-size: 1.2rem;
     }
     
     .asset-item {
@@ -5110,4 +5173,31 @@ html {
     .category-header, .asset-item {
         padding: 0.75rem;
     }
+}
+
+/* 自定义滚动条样式 */
+.main-content::-webkit-scrollbar,
+.assets-categories::-webkit-scrollbar,
+.assets-page-mobile::-webkit-scrollbar {
+    width: 6px;
+}
+
+.main-content::-webkit-scrollbar-track,
+.assets-categories::-webkit-scrollbar-track,
+.assets-page-mobile::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.main-content::-webkit-scrollbar-thumb,
+.assets-categories::-webkit-scrollbar-thumb,
+.assets-page-mobile::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+.main-content::-webkit-scrollbar-thumb:hover,
+.assets-categories::-webkit-scrollbar-thumb:hover,
+.assets-page-mobile::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
 }
