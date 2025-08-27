@@ -27,7 +27,6 @@ const HomePage = ({
     const [expenseStats, setExpenseStats] = useState([]);
     const [activeTab, setActiveTab] = useState('expense'); // 'expense' or 'income'
     const [dailyStats, setDailyStats] = useState([]); // 按天的收支统计
-    const [recentTransactions, setRecentTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedDate, setSelectedDate] = useState(new Date()); // 选中的日期，默认为今天
     const [selectedDateTransactions, setSelectedDateTransactions] = useState([]); // 选中日期的交易明细
@@ -68,24 +67,6 @@ const HomePage = ({
         } catch (error) {
             console.error('Error fetching stats:', error);
             showToast(lang === 'zh' ? '网络错误' : 'Network error', 'error');
-        }
-    };
-
-    // 获取最近的交易记录
-    const fetchRecentTransactions = async () => {
-        try {
-            const response = await fetchWithAuth('/api/transactions?limit=10');
-            if (response.ok) {
-                const data = await response.json();
-                console.log('Recent transactions:', data);
-                setRecentTransactions(data);
-            } else {
-                console.error('Failed to fetch transactions:', response.status, response.statusText);
-                showToast(lang === 'zh' ? '获取交易记录失败' : 'Failed to fetch transactions', 'error');
-            }
-        } catch (error) {
-            console.error('Error fetching recent transactions:', error);
-            showToast(lang === 'zh' ? '获取交易记录失败' : 'Failed to fetch transactions', 'error');
         }
     };
 
@@ -233,7 +214,6 @@ const HomePage = ({
             if (response.ok) {
                 showToast(lang === 'zh' ? '删除成功！' : 'Deleted successfully!');
                 fetchStats();
-                fetchRecentTransactions();
                 fetchDailyStats();
             } else {
                 throw new Error('Delete failed');
@@ -247,7 +227,7 @@ const HomePage = ({
     useEffect(() => {
         const loadData = async () => {
             setLoading(true);
-            await Promise.all([fetchStats(), fetchRecentTransactions(), fetchDailyStats()]);
+            await Promise.all([fetchStats(), fetchDailyStats()]);
             
             // 初始化时自动加载今天的交易
             const today = new Date();
@@ -272,7 +252,6 @@ const HomePage = ({
     // 刷新数据
     const refreshData = () => {
         fetchStats();
-        fetchRecentTransactions();
         fetchDailyStats();
     };
 

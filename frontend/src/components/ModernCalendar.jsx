@@ -74,12 +74,12 @@ const ModernCalendar = ({
           <div className="calendar-tile-content">
             {stats.income > 0 && (
               <div className="calendar-income-amount" title={`收入: ¥${stats.income.toFixed(2)}`}>
-                +{stats.income >= 1000 ? (stats.income/1000).toFixed(1) + 'k' : stats.income.toFixed(0)}
+                {stats.income >= 1000 ? (stats.income/1000).toFixed(1) + 'k' : stats.income.toFixed(0)}
               </div>
             )}
             {stats.expense > 0 && (
               <div className="calendar-expense-amount" title={`支出: ¥${stats.expense.toFixed(2)}`}>
-                -{stats.expense >= 1000 ? (stats.expense/1000).toFixed(1) + 'k' : stats.expense.toFixed(0)}
+                {stats.expense >= 1000 ? (stats.expense/1000).toFixed(1) + 'k' : stats.expense.toFixed(0)}
               </div>
             )}
           </div>

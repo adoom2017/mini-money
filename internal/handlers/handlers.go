@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -197,6 +198,12 @@ func Register(c *gin.Context) {
 	if err := database.CreateUser(user); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
 		return
+	}
+
+	// Initialize default asset categories for the new user
+	if err := database.InitializeDefaultAssetCategories(user.ID); err != nil {
+		log.Printf("Warning: Failed to initialize default asset categories for user %d: %v", user.ID, err)
+		// Don't fail registration, but log the error
 	}
 
 	// Generate token
@@ -449,9 +456,9 @@ func CreateAsset(c *gin.Context) {
 	}
 
 	asset := &models.Asset{
-		UserID:   userID,
-		Name:     req.Name,
-		Category: req.Category,
+		UserID:     userID,
+		Name:       req.Name,
+		CategoryID: &req.CategoryID,
 	}
 
 	if err := database.CreateAsset(asset); err != nil {
@@ -597,4 +604,131 @@ func UpdateAssetRecord(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, record)
+}
+
+// GetAssetCategories handles GET /api/asset-categories
+func GetAssetCategories(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+
+	categories, err := database.GetAssetCategories(userID)
+	if err != nil {
+		log.Printf("Error getting asset categories for user %d: %v", userID, err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get asset categories: " + err.Error()})
+		return
+	}
+
+	log.Printf("GetAssetCategories for user %d: found %d categories", userID, len(categories))
+
+	// If no categories found, automatically initialize defaults
+	if len(categories) == 0 {
+		log.Printf("No asset categories found for user %d, auto-initializing defaults...", userID)
+
+		// Initialize default asset categories
+		if err := database.InitializeDefaultAssetCategories(userID); err != nil {
+			log.Printf("Failed to auto-initialize default asset categories for user %d: %v", userID, err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to initialize default categories: " + err.Error()})
+			return
+		}
+
+		// Fetch the newly created categories
+		categories, err = database.GetAssetCategories(userID)
+		if err != nil {
+			log.Printf("Failed to fetch categories after initialization for user %d: %v", userID, err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get asset categories after initialization: " + err.Error()})
+			return
+		}
+
+		log.Printf("Auto-initialized %d default categories for user %d", len(categories), userID)
+	} else {
+		log.Printf("Asset categories for user %d: %+v", userID, categories)
+	}
+
+	c.JSON(http.StatusOK, categories)
+}
+
+// InitializeDefaultCategories handles POST /api/asset-categories/initialize-defaults
+func InitializeDefaultCategories(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+
+	// Initialize default asset categories for the user
+	if err := database.InitializeDefaultAssetCategories(userID); err != nil {
+		log.Printf("Failed to initialize default asset categories for user %d: %v", userID, err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to initialize default categories: " + err.Error()})
+		return
+	}
+
+	// Return the new categories
+	categories, err := database.GetAssetCategories(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get asset categories: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":    "Default categories initialized successfully",
+		"categories": categories,
+	})
+}
+
+// CreateAssetCategory handles POST /api/asset-categories
+func CreateAssetCategory(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+
+	var request models.CreateAssetCategoryRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	category, err := database.CreateAssetCategory(userID, request.Name, request.Icon, request.Type)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create asset category: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, category)
+}
+
+// UpdateAssetCategory handles PUT /api/asset-categories/:id
+func UpdateAssetCategory(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+
+	categoryID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid category ID"})
+		return
+	}
+
+	var request models.UpdateAssetCategoryRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	category, err := database.UpdateAssetCategory(categoryID, userID, request.Name, request.Icon, request.Type)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update asset category: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, category)
+}
+
+// DeleteAssetCategory handles DELETE /api/asset-categories/:id
+func DeleteAssetCategory(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+
+	categoryID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid category ID"})
+		return
+	}
+
+	err = database.DeleteAssetCategory(categoryID, userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete asset category: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Asset category deleted successfully"})
 }

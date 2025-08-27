@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { zhCN } from 'date-fns/locale';
 
 const AddTransactionModal = ({ 
     show, 
@@ -14,7 +17,7 @@ const AddTransactionModal = ({
         amount: '',
         categoryKey: 'food',
         description: '',
-        date: new Date().toISOString().split('T')[0] // 默认为今天，格式: YYYY-MM-DD
+        date: new Date() // 默认为今天，现在使用 Date 对象
     });
     const [saving, setSaving] = useState(false);
 
@@ -30,6 +33,13 @@ const AddTransactionModal = ({
         setFormData(prev => ({
             ...prev,
             [name]: value
+        }));
+    };
+
+    const handleDateChange = (date) => {
+        setFormData(prev => ({
+            ...prev,
+            date: date
         }));
     };
 
@@ -52,10 +62,11 @@ const AddTransactionModal = ({
 
         setSaving(true);
         try {
-            // 确保 amount 是数字类型
+            // 确保 amount 是数字类型，date 是正确格式
             const transactionData = {
                 ...formData,
-                amount: parseFloat(formData.amount)
+                amount: parseFloat(formData.amount),
+                date: formData.date.toISOString().split('T')[0] // 转换为 YYYY-MM-DD 格式
             };
             
             await onSave(transactionData);
@@ -65,7 +76,7 @@ const AddTransactionModal = ({
                 amount: '',
                 categoryKey: 'food',
                 description: '',
-                date: new Date().toISOString().split('T')[0]
+                date: new Date() // 重置为新的 Date 对象
             });
             onClose();
         } catch (error) {
@@ -132,44 +143,53 @@ const AddTransactionModal = ({
                                 </div>
                             </div>
 
-                            {/* 金额输入 */}
+                            {/* 金额和日期输入 - 同一行 */}
                             <div className="mb-4">
-                                <label htmlFor="amount" className="form-label fw-bold">
-                                    {t('amount')}
-                                </label>
-                                <div className="input-group">
-                                    <span className="input-group-text">
-                                        {t('currencySymbol')}
-                                    </span>
-                                    <input
-                                        type="number"
-                                        className="form-control"
-                                        id="amount"
-                                        name="amount"
-                                        value={formData.amount}
-                                        onChange={handleInputChange}
-                                        placeholder="0.00"
-                                        step="0.01"
-                                        min="0"
-                                        required
-                                    />
-                                </div>
-                            </div>
+                                <div className="row g-3">
+                                    {/* 金额输入 */}
+                                    <div className="col-md-4">
+                                        <label htmlFor="amount" className="form-label fw-bold">
+                                            {t('amount')}
+                                        </label>
+                                        <div className="input-group">
+                                            <span className="input-group-text">
+                                                {t('currencySymbol')}
+                                            </span>
+                                            <input
+                                                type="number"
+                                                className="form-control"
+                                                id="amount"
+                                                name="amount"
+                                                value={formData.amount}
+                                                onChange={handleInputChange}
+                                                placeholder="0.00"
+                                                step="0.01"
+                                                min="0"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
 
-                            {/* 日期选择 */}
-                            <div className="mb-4">
-                                <label htmlFor="date" className="form-label fw-bold">
-                                    {lang === 'zh' ? '交易日期' : 'Transaction Date'}
-                                </label>
-                                <input
-                                    type="date"
-                                    className="form-control"
-                                    id="date"
-                                    name="date"
-                                    value={formData.date}
-                                    onChange={handleInputChange}
-                                    required
-                                />
+                                    {/* 日期选择 */}
+                                    <div className="col-md-8">
+                                        <label className="form-label fw-bold">
+                                            {lang === 'zh' ? '交易日期' : 'Transaction Date'}
+                                        </label>
+                                        <DatePicker
+                                            selected={formData.date}
+                                            onChange={handleDateChange}
+                                            dateFormat="yyyy-MM-dd"
+                                            className="form-control custom-datepicker"
+                                            placeholderText={lang === 'zh' ? '选择日期' : 'Select date'}
+                                            showYearDropdown
+                                            showMonthDropdown
+                                            dropdownMode="select"
+                                            maxDate={new Date()}
+                                            locale={lang === 'zh' ? zhCN : undefined}
+                                            required
+                                        />
+                                    </div>
+                                </div>
                             </div>
 
                             {/* 分类选择 */}
@@ -179,7 +199,7 @@ const AddTransactionModal = ({
                                 </label>
                                 <div className="row g-2">
                                     {getCurrentCategories().map(category => (
-                                        <div key={category} className="col-6 col-md-4 col-lg-3">
+                                        <div key={category} className="col-6 col-md-4 col-lg-3 col-xl-2 col-xxl-2">
                                             <button
                                                 type="button"
                                                 className={`btn w-100 p-3 ${

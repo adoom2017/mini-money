@@ -122,6 +122,103 @@ func createTable() error {
 		// Don't return error as this is not critical for app functionality
 	}
 
+	// Create asset_categories table
+	assetCategoryTableSQL := `
+	CREATE TABLE IF NOT EXISTS asset_categories (
+		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+		user_id INTEGER NOT NULL,
+		name TEXT NOT NULL,
+		icon TEXT NOT NULL,
+		type TEXT NOT NULL CHECK (type IN ('asset', 'liability')),
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		FOREIGN KEY (user_id) REFERENCES users (id),
+		UNIQUE(user_id, name, type)
+	);
+	`
+	_, err = db.Exec(assetCategoryTableSQL)
+	if err != nil {
+		log.Printf("Error creating asset_categories table: %v", err)
+		return err
+	}
+
+	// Migrate assets table to use category_id instead of category string
+	err = migrateAssetsCategoryToID()
+	if err != nil {
+		log.Printf("Error migrating assets category: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+// migrateAssetsCategoryToID migrates the assets table to use category_id instead of category string
+func migrateAssetsCategoryToID() error {
+	// Check if assets table has category_id column
+	var columnExists bool
+	err := db.QueryRow(`
+		SELECT COUNT(*) > 0 
+		FROM pragma_table_info('assets') 
+		WHERE name = 'category_id'
+	`).Scan(&columnExists)
+	if err != nil {
+		return err
+	}
+
+	// If category_id column doesn't exist, add it
+	if !columnExists {
+		// Add category_id column
+		_, err = db.Exec("ALTER TABLE assets ADD COLUMN category_id INTEGER REFERENCES asset_categories(id)")
+		if err != nil {
+			return err
+		}
+		log.Println("Added category_id column to assets table")
+	}
+
+	return nil
+}
+
+// InitializeDefaultAssetCategories creates default asset categories for a new user
+func InitializeDefaultAssetCategories(userID int64) error {
+	defaultCategories := []struct {
+		Name string
+		Icon string
+		Type string
+	}{
+		// 资产类别
+		{"银行卡", "💳", "asset"},
+		{"现金", "💵", "asset"},
+		{"支付宝", "💰", "asset"},
+		{"微信", "💳", "asset"},
+		{"投资", "📈", "asset"},
+		{"股票", "📊", "asset"},
+		{"基金", "💹", "asset"},
+		// 负债类别
+		{"信用卡", "💳", "liability"},
+		{"房贷", "🏠", "liability"},
+		{"车贷", "🚗", "liability"},
+		{"借款", "💰", "liability"},
+	}
+
+	for _, cat := range defaultCategories {
+		// Check if category already exists
+		var count int
+		err := db.QueryRow("SELECT COUNT(*) FROM asset_categories WHERE user_id = ? AND name = ? AND type = ?",
+			userID, cat.Name, cat.Type).Scan(&count)
+		if err != nil {
+			return err
+		}
+
+		// Only create if doesn't exist
+		if count == 0 {
+			_, err = CreateAssetCategory(userID, cat.Name, cat.Icon, cat.Type)
+			if err != nil {
+				log.Printf("Error creating default asset category %s: %v", cat.Name, err)
+				// Continue with other categories even if one fails
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -405,14 +502,26 @@ func UpdateUserEmail(userID int64, email string) error {
 
 // CreateAsset creates a new asset
 func CreateAsset(asset *models.Asset) error {
-	stmt, err := db.Prepare("INSERT INTO assets(user_id, name, category, created_at, updated_at) VALUES(?, ?, ?, ?, ?)")
+	// If category_id is provided, get the category name and use that
+	if asset.CategoryID != nil && *asset.CategoryID > 0 {
+		// Get category name for backward compatibility
+		var categoryName string
+		err := db.QueryRow("SELECT name FROM asset_categories WHERE id = ? AND user_id = ?",
+			*asset.CategoryID, asset.UserID).Scan(&categoryName)
+		if err != nil {
+			return err
+		}
+		asset.Category = categoryName
+	}
+
+	stmt, err := db.Prepare("INSERT INTO assets(user_id, name, category, category_id, created_at, updated_at) VALUES(?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 
 	now := time.Now()
-	res, err := stmt.Exec(asset.UserID, asset.Name, asset.Category, now, now)
+	res, err := stmt.Exec(asset.UserID, asset.Name, asset.Category, asset.CategoryID, now, now)
 	if err != nil {
 		return err
 	}
@@ -429,7 +538,17 @@ func CreateAsset(asset *models.Asset) error {
 
 // GetAssetsByUserID retrieves all assets for a specific user
 func GetAssetsByUserID(userID int64) ([]models.Asset, error) {
-	rows, err := db.Query("SELECT id, user_id, name, category, created_at, updated_at FROM assets WHERE user_id = ? ORDER BY created_at DESC", userID)
+	query := `
+		SELECT a.id, a.user_id, a.name, 
+			   COALESCE(ac.name, a.category) as category_name,
+			   a.category_id,
+			   a.created_at, a.updated_at 
+		FROM assets a
+		LEFT JOIN asset_categories ac ON a.category_id = ac.id
+		WHERE a.user_id = ? 
+		ORDER BY a.created_at DESC
+	`
+	rows, err := db.Query(query, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -438,7 +557,7 @@ func GetAssetsByUserID(userID int64) ([]models.Asset, error) {
 	assets := []models.Asset{}
 	for rows.Next() {
 		var asset models.Asset
-		if err := rows.Scan(&asset.ID, &asset.UserID, &asset.Name, &asset.Category, &asset.CreatedAt, &asset.UpdatedAt); err != nil {
+		if err := rows.Scan(&asset.ID, &asset.UserID, &asset.Name, &asset.Category, &asset.CategoryID, &asset.CreatedAt, &asset.UpdatedAt); err != nil {
 			return nil, err
 		}
 		assets = append(assets, asset)
@@ -463,13 +582,14 @@ func GetAssetsWithRecordsByUserID(userID int64) ([]models.AssetWithRecords, erro
 		}
 
 		result[i] = models.AssetWithRecords{
-			ID:        asset.ID,
-			UserID:    asset.UserID,
-			Name:      asset.Name,
-			Category:  asset.Category,
-			Records:   records,
-			CreatedAt: asset.CreatedAt,
-			UpdatedAt: asset.UpdatedAt,
+			ID:         asset.ID,
+			UserID:     asset.UserID,
+			Name:       asset.Name,
+			Category:   asset.Category,
+			CategoryID: asset.CategoryID,
+			Records:    records,
+			CreatedAt:  asset.CreatedAt,
+			UpdatedAt:  asset.UpdatedAt,
 		}
 	}
 
@@ -592,4 +712,112 @@ func UpdateAssetRecord(recordID, assetID, userID int64, date string, amount floa
 	}
 
 	return &record, nil
+}
+
+// GetAssetCategories retrieves all asset categories for a specific user
+func GetAssetCategories(userID int64) ([]models.AssetCategory, error) {
+	rows, err := db.Query(`
+		SELECT id, user_id, name, icon, type 
+		FROM asset_categories 
+		WHERE user_id = ? 
+		ORDER BY type, name
+	`, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var categories []models.AssetCategory
+	for rows.Next() {
+		var category models.AssetCategory
+		err := rows.Scan(&category.ID, &category.UserID, &category.Name, &category.Icon, &category.Type)
+		if err != nil {
+			return nil, err
+		}
+		categories = append(categories, category)
+	}
+	return categories, nil
+}
+
+// CreateAssetCategory creates a new asset category
+func CreateAssetCategory(userID int64, name, icon, categoryType string) (*models.AssetCategory, error) {
+	stmt, err := db.Prepare(`
+		INSERT INTO asset_categories (user_id, name, icon, type) 
+		VALUES (?, ?, ?, ?)
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	result, err := stmt.Exec(userID, name, icon, categoryType)
+	if err != nil {
+		return nil, err
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.AssetCategory{
+		ID:     id,
+		UserID: userID,
+		Name:   name,
+		Icon:   icon,
+		Type:   categoryType,
+	}, nil
+}
+
+// UpdateAssetCategory updates an existing asset category
+func UpdateAssetCategory(categoryID, userID int64, name, icon, categoryType string) (*models.AssetCategory, error) {
+	stmt, err := db.Prepare(`
+		UPDATE asset_categories 
+		SET name = ?, icon = ?, type = ?, updated_at = CURRENT_TIMESTAMP
+		WHERE id = ? AND user_id = ?
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(name, icon, categoryType, categoryID, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.AssetCategory{
+		ID:     categoryID,
+		UserID: userID,
+		Name:   name,
+		Icon:   icon,
+		Type:   categoryType,
+	}, nil
+}
+
+// DeleteAssetCategory deletes an asset category
+func DeleteAssetCategory(categoryID, userID int64) error {
+	stmt, err := db.Prepare("DELETE FROM asset_categories WHERE id = ? AND user_id = ?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(categoryID, userID)
+	return err
+}
+
+// GetAssetCategoryByID retrieves a specific asset category by ID
+func GetAssetCategoryByID(categoryID, userID int64) (*models.AssetCategory, error) {
+	var category models.AssetCategory
+	err := db.QueryRow(`
+		SELECT id, user_id, name, icon, type 
+		FROM asset_categories 
+		WHERE id = ? AND user_id = ?
+	`, categoryID, userID).Scan(&category.ID, &category.UserID, &category.Name, &category.Icon, &category.Type)
+
+	if err != nil {
+		return nil, err
+	}
+	return &category, nil
 }

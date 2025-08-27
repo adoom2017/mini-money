@@ -4,12 +4,15 @@ import AssetTrendChart from './AssetTrendChart.jsx';
 
 const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
     const [assets, setAssets] = React.useState([]);
+    const [assetCategories, setAssetCategories] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
     const [showAddModal, setShowAddModal] = React.useState(false);
     const [showRecordModal, setShowRecordModal] = React.useState(false);
+    const [showCategoryModal, setShowCategoryModal] = React.useState(false);
     const [selectedAsset, setSelectedAsset] = React.useState(null);
-    const [newAsset, setNewAsset] = React.useState({ name: '', category: 'card' });
+    const [newAsset, setNewAsset] = React.useState({ name: '', categoryId: '' });
     const [newRecord, setNewRecord] = React.useState({ date: '', amount: '' });
+    const [newCategory, setNewCategory] = React.useState({ name: '', icon: '', type: 'asset' });
     const [expandedCharts, setExpandedCharts] = React.useState({});
     const [expandedCategories, setExpandedCategories] = React.useState({});
     const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
@@ -31,16 +34,10 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
         }));
     };
 
-    // 资产类别配置
-    const assetCategories = {
-        card: { name: '信用卡', icon: '💳', color: '#ff6b6b' },
-        cash: { name: '资金', icon: '💰', color: '#4ecdc4' },
-        investment: { name: '投资理财', icon: '📈', color: '#45b7d1' }
-    };
-
-    // Load assets from API
+    // Load assets and categories from API
     React.useEffect(() => {
         fetchAssets();
+        fetchAssetCategories();
     }, []);
 
     const fetchAssets = async () => {
@@ -53,7 +50,8 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
                 const transformedAssets = data.map(asset => ({
                     id: asset.id,
                     name: asset.name,
-                    category: asset.category || 'card', // 默认为信用卡类别
+                    category: asset.category,
+                    categoryId: asset.categoryId,
                     records: asset.records || [],
                 }));
                 setAssets(transformedAssets);
@@ -68,10 +66,34 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
         }
     };
 
+    const fetchAssetCategories = async () => {
+        try {
+            const response = await fetchWithAuth('/api/asset-categories');
+            if (response.ok) {
+                const data = await response.json();
+                setAssetCategories(data || []);
+                // Set default category if none selected
+                if (!newAsset.categoryId && Array.isArray(data) && data.length > 0) {
+                    setNewAsset(prev => ({ ...prev, categoryId: data[0].id }));
+                }
+            } else if (response.status !== 401) {
+                showToast('Failed to load asset categories', 'error');
+            }
+        } catch (error) {
+            console.error('Error fetching asset categories:', error);
+            showToast('Error loading asset categories', 'error');
+        }
+    };
+
     // Add new asset
     const handleAddAsset = async () => {
         if (!newAsset.name.trim()) {
             showToast('请输入资产名称', 'error');
+            return;
+        }
+        
+        if (!newAsset.categoryId) {
+            showToast('请选择资产类别', 'error');
             return;
         }
 
@@ -81,7 +103,7 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     name: newAsset.name.trim(),
-                    category: newAsset.category 
+                    categoryId: parseInt(newAsset.categoryId)
                 })
             });
 
@@ -89,10 +111,12 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
                 const asset = await response.json();
                 setAssets([...assets, { 
                     ...asset, 
-                    category: newAsset.category,
                     records: [] 
                 }]);
-                setNewAsset({ name: '', category: 'card' });
+                const firstCategoryId = Array.isArray(assetCategories) && assetCategories.length > 0 
+                    ? assetCategories[0].id 
+                    : '';
+                setNewAsset({ name: '', categoryId: firstCategoryId });
                 setShowAddModal(false);
                 showToast('资产添加成功', 'success');
             } else {
@@ -182,6 +206,60 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
         setAssetToDelete(null);
     };
 
+    // Add new asset category
+    const handleAddCategory = async () => {
+        if (!newCategory.name.trim() || !newCategory.icon.trim()) {
+            showToast('请填写完整的类别信息', 'error');
+            return;
+        }
+
+        try {
+            const response = await fetchWithAuth('/api/asset-categories', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: newCategory.name.trim(),
+                    icon: newCategory.icon.trim(),
+                    type: newCategory.type
+                })
+            });
+
+            if (response.ok) {
+                const createdCategory = await response.json();
+                setAssetCategories(prev => [...prev, createdCategory]);
+                setNewCategory({ name: '', icon: '', type: 'asset' });
+                setShowCategoryModal(false);
+                showToast('类别添加成功', 'success');
+            } else {
+                showToast('添加类别失败', 'error');
+            }
+        } catch (error) {
+            console.error('Error adding category:', error);
+            showToast('添加类别失败', 'error');
+        }
+    };
+
+    // Delete asset category
+    const handleDeleteCategory = async (categoryId) => {
+        if (window.confirm('确定要删除这个类别吗？')) {
+            try {
+                const response = await fetchWithAuth(`/api/asset-categories/${categoryId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    setAssetCategories(prev => prev.filter(cat => cat.id !== categoryId));
+                    showToast('类别删除成功', 'success');
+                } else {
+                    showToast('删除类别失败', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting category:', error);
+                showToast('删除类别失败', 'error');
+            }
+        }
+    };
+
     // Get latest amount for an asset
     const getLatestAmount = (records) => {
         if (!records || records.length === 0) return 0;
@@ -197,21 +275,31 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
     };
 
     // Get total assets value (excluding liabilities)
+    // Get category info by ID
+    const getCategoryInfo = (categoryId) => {
+        if (!assetCategories || !Array.isArray(assetCategories)) {
+            return { name: '未分类', icon: '❓', type: 'asset' };
+        }
+        return assetCategories.find(cat => cat.id === categoryId) || 
+               { name: '未分类', icon: '❓', type: 'asset' };
+    };
+
+    // Get total assets value (only asset type categories)
     const getTotalAssets = () => {
         return assets.reduce((total, asset) => {
-            // 只计算非信用卡的资产
-            if (asset.category !== 'card') {
+            const categoryInfo = getCategoryInfo(asset.categoryId);
+            if (categoryInfo.type === 'asset') {
                 return total + getLatestAmount(asset.records);
             }
             return total;
         }, 0);
     };
 
-    // Get total liabilities value (credit cards only)
+    // Get total liabilities value (only liability type categories)
     const getTotalLiabilities = () => {
         return assets.reduce((total, asset) => {
-            // 只计算信用卡负债
-            if (asset.category === 'card') {
+            const categoryInfo = getCategoryInfo(asset.categoryId);
+            if (categoryInfo.type === 'liability') {
                 return total + getLatestAmount(asset.records);
             }
             return total;
@@ -226,11 +314,15 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
     // Group assets by category
     const groupAssetsByCategory = () => {
         return assets.reduce((groups, asset) => {
-            const category = asset.category || 'card';
-            if (!groups[category]) {
-                groups[category] = [];
+            const categoryInfo = getCategoryInfo(asset.categoryId);
+            const categoryKey = `${categoryInfo.type}_${asset.category}`;
+            if (!groups[categoryKey]) {
+                groups[categoryKey] = {
+                    assets: [],
+                    categoryInfo: categoryInfo
+                };
             }
-            groups[category].push(asset);
+            groups[categoryKey].assets.push(asset);
             return groups;
         }, {});
     };
@@ -262,12 +354,20 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
             {/* 页面头部 */}
             <div className="page-header">
                 <h2 className="page-title">资产管理</h2>
-                <button 
-                    onClick={() => setShowAddModal(true)} 
-                    className="add-asset-btn-header"
-                >
-                    + 添加资产
-                </button>
+                <div className="page-header-buttons">
+                    <button 
+                        onClick={() => setShowCategoryModal(true)} 
+                        className="manage-category-btn"
+                    >
+                        管理类别
+                    </button>
+                    <button 
+                        onClick={() => setShowAddModal(true)} 
+                        className="add-asset-btn-header"
+                    >
+                        + 添加资产
+                    </button>
+                </div>
             </div>
 
             {/* 总资产概览 */}
@@ -301,8 +401,9 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
                 </div>
             ) : (
                 <div className="assets-categories">
-                    {Object.entries(groupAssetsByCategory()).map(([category, categoryAssets]) => {
-                        const categoryInfo = assetCategories[category] || assetCategories.card;
+                    {Object.entries(groupAssetsByCategory()).map(([category, categoryData]) => {
+                        const categoryInfo = categoryData.categoryInfo;
+                        const categoryAssets = categoryData.assets;
                         // 分类总计显示实际金额（信用卡也显示正值）
                         const categoryTotal = categoryAssets.reduce((sum, asset) => sum + getLatestAmount(asset.records), 0);
                         const isExpanded = expandedCategories[category] === true; // 默认收起
@@ -412,11 +513,11 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
                                     <label className="form-label">资产类别</label>
                                     <select
                                         className="form-select"
-                                        value={newAsset.category}
-                                        onChange={(e) => setNewAsset({ ...newAsset, category: e.target.value })}
+                                        value={newAsset.categoryId}
+                                        onChange={(e) => setNewAsset({ ...newAsset, categoryId: e.target.value })}
                                     >
-                                        {Object.entries(assetCategories).map(([key, category]) => (
-                                            <option key={key} value={key}>
+                                        {Array.isArray(assetCategories) && assetCategories.map((category) => (
+                                            <option key={category.id} value={category.id}>
                                                 {category.icon} {category.name}
                                             </option>
                                         ))}
@@ -508,6 +609,99 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
                                     className="btn btn-danger"
                                 >
                                     确认删除
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Category Management Modal */}
+            {showCategoryModal && (
+                <div className="modal" style={{ display: 'block' }}>
+                    <div className="modal-dialog modal-lg">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">管理资产类别</h5>
+                                <button onClick={() => setShowCategoryModal(false)}>×</button>
+                            </div>
+                            <div className="modal-body">
+                                {/* Add New Category Form */}
+                                <div className="category-form mb-4">
+                                    <h6>添加新类别</h6>
+                                    <div className="row g-3">
+                                        <div className="col-md-4">
+                                            <label className="form-label">类别名称</label>
+                                            <input
+                                                type="text"
+                                                className="form-control"
+                                                value={newCategory.name}
+                                                onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
+                                                placeholder="输入类别名称"
+                                            />
+                                        </div>
+                                        <div className="col-md-3">
+                                            <label className="form-label">图标</label>
+                                            <input
+                                                type="text"
+                                                className="form-control"
+                                                value={newCategory.icon}
+                                                onChange={(e) => setNewCategory({ ...newCategory, icon: e.target.value })}
+                                                placeholder="输入图标 (如: 💰)"
+                                            />
+                                        </div>
+                                        <div className="col-md-3">
+                                            <label className="form-label">类型</label>
+                                            <select
+                                                className="form-select"
+                                                value={newCategory.type}
+                                                onChange={(e) => setNewCategory({ ...newCategory, type: e.target.value })}
+                                            >
+                                                <option value="asset">资产</option>
+                                                <option value="liability">负债</option>
+                                            </select>
+                                        </div>
+                                        <div className="col-md-2">
+                                            <label className="form-label">&nbsp;</label>
+                                            <button 
+                                                className="btn btn-primary w-100"
+                                                onClick={handleAddCategory}
+                                                disabled={!newCategory.name.trim() || !newCategory.icon.trim()}
+                                            >
+                                                添加
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Existing Categories List */}
+                                <div className="categories-list">
+                                    <h6>现有类别</h6>
+                                    <div className="list-group">
+                                        {Array.isArray(assetCategories) && assetCategories.map((category) => (
+                                            <div key={category.id} className="list-group-item d-flex justify-content-between align-items-center">
+                                                <div className="category-info">
+                                                    <span className="category-icon me-2">{category.icon}</span>
+                                                    <span className="category-name">{category.name}</span>
+                                                    <span className="badge bg-secondary ms-2">
+                                                        {category.type === 'asset' ? '资产' : '负债'}
+                                                    </span>
+                                                </div>
+                                                <button 
+                                                    className="btn btn-sm btn-outline-danger"
+                                                    onClick={() => handleDeleteCategory(category.id)}
+                                                    disabled={false} // 允许删除所有类别，后端会处理权限
+                                                >
+                                                    删除
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="modal-footer">
+                                <button onClick={() => setShowCategoryModal(false)} className="btn btn-secondary">
+                                    关闭
                                 </button>
                             </div>
                         </div>

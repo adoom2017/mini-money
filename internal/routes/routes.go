@@ -44,6 +44,12 @@ func SetupRoutes() *gin.Engine {
 		api.POST("/assets/:id/records", handlers.CreateAssetRecord)
 		api.PUT("/assets/:id/records/:recordId", handlers.UpdateAssetRecord)
 		api.DELETE("/assets/:id/records/:recordId", handlers.DeleteAssetRecord)
+		// Asset category routes
+		api.GET("/asset-categories", handlers.GetAssetCategories)
+		api.POST("/asset-categories", handlers.CreateAssetCategory)
+		api.POST("/asset-categories/initialize-defaults", handlers.InitializeDefaultCategories)
+		api.PUT("/asset-categories/:id", handlers.UpdateAssetCategory)
+		api.DELETE("/asset-categories/:id", handlers.DeleteAssetCategory)
 	}
 
 	// Serve frontend for all other routes

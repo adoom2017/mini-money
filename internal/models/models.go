@@ -111,12 +111,13 @@ var IncomeCategories = []Category{
 
 // Asset represents an asset account
 type Asset struct {
-	ID        int64     `json:"id"`
-	UserID    int64     `json:"userId"`
-	Name      string    `json:"name"`
-	Category  string    `json:"category"` // 资产分类：card, cash, investment
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	ID         int64     `json:"id"`
+	UserID     int64     `json:"userId"`
+	Name       string    `json:"name"`
+	Category   string    `json:"category"`   // 保持向后兼容，现在是分类名称
+	CategoryID *int64    `json:"categoryId"` // 新的分类ID关联
+	CreatedAt  time.Time `json:"createdAt"`
+	UpdatedAt  time.Time `json:"updatedAt"`
 }
 
 // AssetRecord represents a record of asset value at a specific date
@@ -131,23 +132,47 @@ type AssetRecord struct {
 
 // AssetWithRecords represents an asset with its records
 type AssetWithRecords struct {
-	ID        int64         `json:"id"`
-	UserID    int64         `json:"userId"`
-	Name      string        `json:"name"`
-	Category  string        `json:"category"` // 资产分类：card, cash, investment
-	Records   []AssetRecord `json:"records"`
-	CreatedAt time.Time     `json:"createdAt"`
-	UpdatedAt time.Time     `json:"updatedAt"`
+	ID         int64         `json:"id"`
+	UserID     int64         `json:"userId"`
+	Name       string        `json:"name"`
+	Category   string        `json:"category"`   // 分类名称
+	CategoryID *int64        `json:"categoryId"` // 分类ID
+	Records    []AssetRecord `json:"records"`
+	CreatedAt  time.Time     `json:"createdAt"`
+	UpdatedAt  time.Time     `json:"updatedAt"`
 }
 
 // CreateAssetRequest represents request to create a new asset
 type CreateAssetRequest struct {
-	Name     string `json:"name" binding:"required,min=1,max=100"`
-	Category string `json:"category" binding:"required,oneof=card cash investment"`
+	Name       string `json:"name" binding:"required,min=1,max=100"`
+	CategoryID int64  `json:"categoryId" binding:"required,min=1"`
 }
 
 // CreateAssetRecordRequest represents request to create a new asset record
 type CreateAssetRecordRequest struct {
 	Date   string  `json:"date" binding:"required"`
 	Amount float64 `json:"amount" binding:"required,min=0"`
+}
+
+// AssetCategory represents an asset category
+type AssetCategory struct {
+	ID     int64  `json:"id"`
+	UserID int64  `json:"userId"`
+	Name   string `json:"name"`
+	Icon   string `json:"icon"`
+	Type   string `json:"type"` // "asset" or "liability"
+}
+
+// CreateAssetCategoryRequest represents request to create a new asset category
+type CreateAssetCategoryRequest struct {
+	Name string `json:"name" binding:"required,min=1,max=50"`
+	Icon string `json:"icon" binding:"required"`
+	Type string `json:"type" binding:"required,oneof=asset liability"`
+}
+
+// UpdateAssetCategoryRequest represents request to update an asset category
+type UpdateAssetCategoryRequest struct {
+	Name string `json:"name" binding:"required,min=1,max=50"`
+	Icon string `json:"icon" binding:"required"`
+	Type string `json:"type" binding:"required,oneof=asset liability"`
 }

@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import AuthPage from './components/AuthPage.jsx';
-import RecordsPage from './components/RecordsPage.jsx';
-import StatisticsPage from './components/StatisticsPage.jsx';
-import AssetsPage from './components/AssetsPage.jsx';
-import HomePage from './components/HomePage.jsx';
-import AddTransactionModal from './components/AddTransactionModal.jsx';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import Toast from './components/Toast.jsx';
-import UserConfigPage from './components/UserConfigPage.jsx';
+
+// 使用懒加载优化页面组件
+const AuthPage = lazy(() => import('./components/AuthPage.jsx'));
+const RecordsPage = lazy(() => import('./components/RecordsPage.jsx'));
+const StatisticsPage = lazy(() => import('./components/StatisticsPage.jsx'));
+const AssetsPage = lazy(() => import('./components/AssetsPage.jsx'));
+const HomePage = lazy(() => import('./components/HomePage.jsx'));
+const AddTransactionModal = lazy(() => import('./components/AddTransactionModal.jsx'));
+const UserConfigPage = lazy(() => import('./components/UserConfigPage.jsx'));
 
 // User Settings Modal Component
 const UserSettingsModal = ({ user, onClose, onUpdatePassword, onUpdateEmail, t }) => {
@@ -644,7 +646,18 @@ const App = () => {
     }
 
     if (!isAuthenticated) {
-        return <AuthPage lang={lang} t={t} login={login} showToast={showToast} />;
+        return (
+            <Suspense fallback={
+                <div className="text-center mt-5">
+                    <div className="spinner-border" role="status">
+                        <span className="visually-hidden">{t('loading')}</span>
+                    </div>
+                    <p className="mt-3 text-muted">{t('loading_page')}</p>
+                </div>
+            }>
+                <AuthPage lang={lang} t={t} login={login} showToast={showToast} />
+            </Suspense>
+        );
     }
 
     return (
@@ -681,7 +694,6 @@ const App = () => {
                             </div>
                             <div className="user-info">
                                 <div className="user-name">{user.username}</div>
-                                <div className="user-desc">已使用 3 天</div>
                             </div>
                         </div>
 
@@ -788,33 +800,42 @@ const App = () => {
                         </div>
 
                         {/* 页面内容 */}
-                        {page === 'home' && (
-                            <HomePage 
-                                {...commonProps} 
-                                onShowAddTransaction={() => setShowAddTransactionModal(true)}
-                                refreshTrigger={refreshTrigger}
-                            />
-                        )}
-                        {page === 'records' && (
-                            <RecordsPage {...commonProps} />
-                        )}
-                        {page === 'statistics' && (
-                            <StatisticsPage {...commonProps} />
-                        )}
-                        {page === 'assets' && (
-                            <AssetsPage {...commonProps} />
-                        )}
-                        {page === 'config' && (
-                            <UserConfigPage
-                                show={true}
-                                onClose={() => setPage('home')}
-                                user={user}
-                                token={token}
-                                onUserUpdate={(updatedUser) => {
-                                    setUser(updatedUser);
-                                }}
-                            />
-                        )}
+                        <Suspense fallback={
+                            <div className="text-center mt-5">
+                                <div className="spinner-border" role="status">
+                                    <span className="visually-hidden">{t('loading')}</span>
+                                </div>
+                                <p className="mt-3 text-muted">{t('loading_page')}</p>
+                            </div>
+                        }>
+                            {page === 'home' && (
+                                <HomePage 
+                                    {...commonProps} 
+                                    onShowAddTransaction={() => setShowAddTransactionModal(true)}
+                                    refreshTrigger={refreshTrigger}
+                                />
+                            )}
+                            {page === 'records' && (
+                                <RecordsPage {...commonProps} />
+                            )}
+                            {page === 'statistics' && (
+                                <StatisticsPage {...commonProps} />
+                            )}
+                            {page === 'assets' && (
+                                <AssetsPage {...commonProps} />
+                            )}
+                            {page === 'config' && (
+                                <UserConfigPage
+                                    show={true}
+                                    onClose={() => setPage('home')}
+                                    user={user}
+                                    token={token}
+                                    onUserUpdate={(updatedUser) => {
+                                        setUser(updatedUser);
+                                    }}
+                                />
+                            )}
+                        </Suspense>
                     </div>
                 </div>
             ) : (
@@ -948,15 +969,19 @@ const App = () => {
             )}
 
             {/* Add Transaction Modal */}
-            <AddTransactionModal
-                show={showAddTransactionModal}
-                onClose={() => setShowAddTransactionModal(false)}
-                onSave={saveTransaction}
-                categoryIconMap={categoryIconMap}
-                categoryColorMap={categoryColorMap}
-                t={t}
-                lang={lang}
-            />
+            {showAddTransactionModal && (
+                <Suspense fallback={null}>
+                    <AddTransactionModal
+                        show={showAddTransactionModal}
+                        onClose={() => setShowAddTransactionModal(false)}
+                        onSave={saveTransaction}
+                        categoryIconMap={categoryIconMap}
+                        categoryColorMap={categoryColorMap}
+                        t={t}
+                        lang={lang}
+                    />
+                </Suspense>
+            )}
 
             {/* Avatar Upload Modal */}
             {showAvatarModal && (
