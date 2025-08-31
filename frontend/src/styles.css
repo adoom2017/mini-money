@@ -4731,27 +4731,27 @@ html {
 }
 
 .manage-category-btn {
-    background: linear-gradient(135deg, #a8e6cf, #88d8a3);
+    background: linear-gradient(135deg, #e8e3ff, #d1c9ff);
     border: none;
     border-radius: 20px;
     padding: 0.6rem 1.2rem;
-    color: #2d5016;
+    color: #5a4fcf;
     font-weight: 600;
     font-size: 0.9rem;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(168, 230, 207, 0.3);
+    box-shadow: 0 4px 15px rgba(209, 201, 255, 0.3);
     white-space: nowrap;
 }
 
 .manage-category-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(168, 230, 207, 0.4);
-    background: linear-gradient(135deg, #88d8a3, #a8e6cf);
+    box-shadow: 0 6px 20px rgba(209, 201, 255, 0.4);
+    background: linear-gradient(135deg, #d1c9ff, #c4b8ff);
 }
 
 .add-asset-btn-header {
-    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    background: linear-gradient(135deg, #667eea, #764ba2);
     border: none;
     border-radius: 20px;
     padding: 0.6rem 1.2rem;
@@ -4760,13 +4760,14 @@ html {
     font-size: 0.9rem;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
     white-space: nowrap;
 }
 
 .add-asset-btn-header:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    background: linear-gradient(135deg, #5a67d8, #6b46c1);
 }
 
 /* Total Assets Card */
@@ -5891,6 +5892,214 @@ textarea.form-control {
     color: #495057;
     font-weight: 600;
     margin-bottom: 1rem;
+}
+
+/* 确保类别表单中的输入框和选择框高度一致 */
+.category-form .form-control,
+.category-form .form-select {
+    height: 42px !important;
+    padding: 0.5rem 0.75rem !important;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.95);
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    box-sizing: border-box;
+}
+
+.category-form .form-control:focus,
+.category-form .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+    background: rgba(255, 255, 255, 1);
+    outline: none;
+}
+
+/* 类别表单中的添加按钮 */
+.category-form .btn {
+    height: 42px !important;
+    padding: 0.5rem 1rem !important;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.category-form .btn-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border: none;
+    color: white;
+    transition: all 0.2s ease;
+}
+
+.category-form .btn-primary:hover {
+    background: linear-gradient(135deg, #5a67d8, #6b46c1);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+/* 图标选择器样式 */
+.icon-selector-container {
+    position: relative;
+}
+
+.icon-selector-btn {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.95);
+    border: 2px solid #dee2e6;
+    cursor: pointer;
+    text-align: left;
+}
+
+.icon-selector-btn:hover {
+    border-color: #667eea;
+}
+
+.selected-icon {
+    flex: 1;
+    color: #2d3748;
+}
+
+.dropdown-arrow {
+    color: #8a92b2;
+    font-size: 0.8rem;
+    transition: transform 0.2s ease;
+}
+
+.icon-selector-btn:focus .dropdown-arrow,
+.icon-selector-btn:hover .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+.icon-picker-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 2px solid #667eea;
+    border-radius: 8px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    max-height: 200px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    margin-top: 4px;
+    animation: fadeInScale 0.2s ease-out;
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.icon-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    padding: 12px;
+    width: 100%;
+    box-sizing: border-box;
+    justify-items: center;
+}
+
+/* 响应式网格布局 - 更少的列数 */
+@media (min-width: 200px) {
+    .icon-picker-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 300px) {
+    .icon-picker-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (min-width: 500px) {
+    .icon-picker-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+/* 自定义滚动条样式 */
+.icon-picker-dropdown::-webkit-scrollbar {
+    width: 6px;
+}
+
+.icon-picker-dropdown::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.icon-picker-dropdown::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.icon-picker-dropdown::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+.icon-option {
+    width: 40px;
+    height: 40px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    flex-shrink: 0;
+    box-sizing: border-box;
+}
+
+.icon-option:hover {
+    background: #f7fafc;
+    border-color: #667eea;
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+}
+
+.icon-option.selected {
+    background: #667eea;
+    border-color: #667eea;
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.icon-option.selected::after {
+    content: '✓';
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    background: #4ade80;
+    color: white;
+    border-radius: 50%;
+    width: 14px;
+    height: 14px;
+    font-size: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
 }
 
 .categories-list h6 {

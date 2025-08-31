@@ -1,5 +1,7 @@
 // Assets Page Component
 import React from 'react';
+import { Input, Select, Button, Modal, Form, Row, Col, List, Tag, Popover, Grid } from 'antd';
+import { PlusOutlined, DeleteOutlined, SmileOutlined } from '@ant-design/icons';
 import AssetTrendChart from './AssetTrendChart.jsx';
 
 const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
@@ -13,10 +15,83 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
     const [newAsset, setNewAsset] = React.useState({ name: '', categoryId: '' });
     const [newRecord, setNewRecord] = React.useState({ date: '', amount: '' });
     const [newCategory, setNewCategory] = React.useState({ name: '', icon: '', type: 'asset' });
+    const [showIconPicker, setShowIconPicker] = React.useState(false);
     const [expandedCharts, setExpandedCharts] = React.useState({});
     const [expandedCategories, setExpandedCategories] = React.useState({});
     const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
     const [assetToDelete, setAssetToDelete] = React.useState(null);
+    const [form] = Form.useForm();
+
+    // 预设图标列表
+    const presetIcons = {
+        asset: [
+            '💰', '💳', '🏦', '💵', '💸', '📱', '💎', '🏠', 
+            '🚗', '📈', '📊', '💹', '🎯', '💳', '🎁', '🏆',
+            '⚡', '🔋', '📟', '💻', '🖥️', '📺', '⌚', '📷'
+        ],
+        liability: [
+            '💳', '🏠', '🚗', '📱', '💊', '🎓', '💸', '📋',
+            '⚠️', '📉', '💰', '🏦', '📄', '✍️', '🔴', '❌',
+            '⏰', '📅', '💔', '🚫', '⛔', '🔻', '📌', '🎯'
+        ]
+    };
+
+    // 图标选择器组件
+    const IconSelector = ({ value, onChange, type = 'asset' }) => {
+        const iconOptions = presetIcons[type];
+        
+        const iconGrid = (
+            <div style={{ 
+                width: 280, 
+                maxHeight: 200, 
+                overflowY: 'auto',
+                padding: 8
+            }}>
+                <Row gutter={[8, 8]}>
+                    {iconOptions.map((icon, index) => (
+                        <Col span={4} key={index}>
+                            <Button
+                                type={value === icon ? 'primary' : 'default'}
+                                size="large"
+                                style={{ 
+                                    width: '100%', 
+                                    height: 40,
+                                    fontSize: '18px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}
+                                onClick={() => {
+                                    onChange(icon);
+                                    setShowIconPicker(false);
+                                }}
+                            >
+                                {icon}
+                            </Button>
+                        </Col>
+                    ))}
+                </Row>
+            </div>
+        );
+
+        return (
+            <Popover
+                content={iconGrid}
+                title="选择图标"
+                trigger="click"
+                open={showIconPicker}
+                onOpenChange={setShowIconPicker}
+                placement="bottom"
+            >
+                <Button
+                    style={{ width: '100%', height: 42 }}
+                    icon={value ? null : <SmileOutlined />}
+                >
+                    {value || '选择图标'}
+                </Button>
+            </Popover>
+        );
+    };
 
     // 切换图表展开状态
     const toggleChart = (assetId) => {
@@ -207,8 +282,11 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
     };
 
     // Add new asset category
-    const handleAddCategory = async () => {
-        if (!newCategory.name.trim() || !newCategory.icon.trim()) {
+    const handleAddCategory = async (formValues = null) => {
+        // 使用表单值或当前状态值
+        const values = formValues || newCategory;
+        
+        if (!values.name?.trim() || !values.icon?.trim()) {
             showToast('请填写完整的类别信息', 'error');
             return;
         }
@@ -218,9 +296,9 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    name: newCategory.name.trim(),
-                    icon: newCategory.icon.trim(),
-                    type: newCategory.type
+                    name: values.name.trim(),
+                    icon: values.icon.trim(),
+                    type: values.type
                 })
             });
 
@@ -228,7 +306,8 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
                 const createdCategory = await response.json();
                 setAssetCategories(prev => [...prev, createdCategory]);
                 setNewCategory({ name: '', icon: '', type: 'asset' });
-                setShowCategoryModal(false);
+                setShowIconPicker(false);
+                form.resetFields();
                 showToast('类别添加成功', 'success');
             } else {
                 showToast('添加类别失败', 'error');
@@ -616,98 +695,147 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
                 </div>
             )}
 
-            {/* Category Management Modal */}
-            {showCategoryModal && (
-                <div className="modal" style={{ display: 'block' }}>
-                    <div className="modal-dialog modal-lg">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <h5 className="modal-title">管理资产类别</h5>
-                                <button onClick={() => setShowCategoryModal(false)}>×</button>
-                            </div>
-                            <div className="modal-body">
-                                {/* Add New Category Form */}
-                                <div className="category-form mb-4">
-                                    <h6>添加新类别</h6>
-                                    <div className="row g-3">
-                                        <div className="col-md-4">
-                                            <label className="form-label">类别名称</label>
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                value={newCategory.name}
-                                                onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
-                                                placeholder="输入类别名称"
-                                            />
-                                        </div>
-                                        <div className="col-md-3">
-                                            <label className="form-label">图标</label>
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                value={newCategory.icon}
-                                                onChange={(e) => setNewCategory({ ...newCategory, icon: e.target.value })}
-                                                placeholder="输入图标 (如: 💰)"
-                                            />
-                                        </div>
-                                        <div className="col-md-3">
-                                            <label className="form-label">类型</label>
-                                            <select
-                                                className="form-select"
-                                                value={newCategory.type}
-                                                onChange={(e) => setNewCategory({ ...newCategory, type: e.target.value })}
-                                            >
-                                                <option value="asset">资产</option>
-                                                <option value="liability">负债</option>
-                                            </select>
-                                        </div>
-                                        <div className="col-md-2">
-                                            <label className="form-label">&nbsp;</label>
-                                            <button 
-                                                className="btn btn-primary w-100"
-                                                onClick={handleAddCategory}
-                                                disabled={!newCategory.name.trim() || !newCategory.icon.trim()}
-                                            >
-                                                添加
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Existing Categories List */}
-                                <div className="categories-list">
-                                    <h6>现有类别</h6>
-                                    <div className="list-group">
-                                        {Array.isArray(assetCategories) && assetCategories.map((category) => (
-                                            <div key={category.id} className="list-group-item d-flex justify-content-between align-items-center">
-                                                <div className="category-info">
-                                                    <span className="category-icon me-2">{category.icon}</span>
-                                                    <span className="category-name">{category.name}</span>
-                                                    <span className="badge bg-secondary ms-2">
-                                                        {category.type === 'asset' ? '资产' : '负债'}
-                                                    </span>
-                                                </div>
-                                                <button 
-                                                    className="btn btn-sm btn-outline-danger"
-                                                    onClick={() => handleDeleteCategory(category.id)}
-                                                    disabled={false} // 允许删除所有类别，后端会处理权限
-                                                >
-                                                    删除
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="modal-footer">
-                                <button onClick={() => setShowCategoryModal(false)} className="btn btn-secondary">
-                                    关闭
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+            {/* Category Management Modal - Ant Design Version */}
+            <Modal
+                title="管理资产类别"
+                open={showCategoryModal}
+                onCancel={() => {
+                    setShowCategoryModal(false);
+                    setShowIconPicker(false);
+                    form.resetFields();
+                }}
+                footer={null}
+                width={800}
+                styles={{
+                    body: { padding: '24px' }
+                }}
+            >
+                {/* Add New Category Form */}
+                <div style={{ 
+                    background: '#fafafa', 
+                    padding: '20px', 
+                    borderRadius: '8px',
+                    marginBottom: '24px'
+                }}>
+                    <h3 style={{ marginBottom: '16px', color: '#1890ff' }}>添加新类别</h3>
+                    <Form
+                        form={form}
+                        layout="horizontal"
+                        onFinish={(values) => {
+                            // 直接将表单值传递给handleAddCategory
+                            handleAddCategory(values);
+                        }}
+                    >
+                        <Row gutter={16}>
+                            <Col span={8}>
+                                <Form.Item
+                                    label="类别名称"
+                                    name="name"
+                                    rules={[{ required: true, message: '请输入类别名称' }]}
+                                >
+                                    <Input 
+                                        placeholder="输入类别名称"
+                                        size="large"
+                                    />
+                                </Form.Item>
+                            </Col>
+                            <Col span={6}>
+                                <Form.Item
+                                    label="图标"
+                                    name="icon"
+                                    rules={[{ required: true, message: '请选择图标' }]}
+                                >
+                                    <IconSelector 
+                                        value={newCategory.icon}
+                                        onChange={(icon) => {
+                                            setNewCategory(prev => ({ ...prev, icon }));
+                                            form.setFieldsValue({ icon });
+                                        }}
+                                        type={newCategory.type}
+                                    />
+                                </Form.Item>
+                            </Col>
+                            <Col span={6}>
+                                <Form.Item
+                                    label="类型"
+                                    name="type"
+                                    initialValue="asset"
+                                >
+                                    <Select 
+                                        size="large"
+                                        onChange={(value) => {
+                                            setNewCategory(prev => ({ ...prev, type: value, icon: '' }));
+                                            form.setFieldsValue({ icon: undefined });
+                                        }}
+                                    >
+                                        <Select.Option value="asset">资产</Select.Option>
+                                        <Select.Option value="liability">负债</Select.Option>
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                            <Col span={4}>
+                                <Form.Item label=" " colon={false}>
+                                    <Button 
+                                        type="primary" 
+                                        htmlType="submit"
+                                        size="large"
+                                        icon={<PlusOutlined />}
+                                        style={{ width: '100%' }}
+                                    >
+                                        添加
+                                    </Button>
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    </Form>
                 </div>
-            )}
+
+                {/* Existing Categories List */}
+                <div>
+                    <h3 style={{ marginBottom: '16px', color: '#1890ff' }}>现有类别</h3>
+                    <List
+                        bordered
+                        dataSource={assetCategories}
+                        renderItem={(category) => (
+                            <List.Item
+                                actions={[
+                                    <Button 
+                                        danger 
+                                        size="small"
+                                        icon={<DeleteOutlined />}
+                                        onClick={() => handleDeleteCategory(category.id)}
+                                    >
+                                        删除
+                                    </Button>
+                                ]}
+                                style={{ padding: '12px 16px' }}
+                            >
+                                <List.Item.Meta
+                                    avatar={
+                                        <div style={{ 
+                                            fontSize: '24px', 
+                                            width: '40px', 
+                                            textAlign: 'center' 
+                                        }}>
+                                            {category.icon}
+                                        </div>
+                                    }
+                                    title={
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span style={{ fontSize: '16px', fontWeight: 500 }}>
+                                                {category.name}
+                                            </span>
+                                            <Tag color={category.type === 'asset' ? 'green' : 'orange'}>
+                                                {category.type === 'asset' ? '资产' : '负债'}
+                                            </Tag>
+                                        </div>
+                                    }
+                                />
+                            </List.Item>
+                        )}
+                    />
+                </div>
+            </Modal>
         </div>
     );
 };
