@@ -38,7 +38,15 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
 
     // 图标选择器组件
     const IconSelector = ({ value, onChange, type = 'asset' }) => {
-        const iconOptions = presetIcons[type];
+        const iconOptions = presetIcons[type] || presetIcons.asset || [];
+        
+        if (!iconOptions.length) {
+            return (
+                <Button style={{ width: '100%', height: 42 }}>
+                    无可用图标
+                </Button>
+            );
+        }
         
         const iconGrid = (
             <div style={{ 
@@ -87,7 +95,7 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
                     style={{ width: '100%', height: 42 }}
                     icon={value ? null : <SmileOutlined />}
                 >
-                    {value || '选择图标'}
+                    {value ? value : '选择图标'}
                 </Button>
             </Popover>
         );
@@ -570,42 +578,138 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
 
             {/* Add Asset Modal */}
             {showAddModal && (
-                <div className="modal" style={{ display: 'block' }}>
-                    <div className="modal-dialog">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <h5 className="modal-title">添加新资产</h5>
-                                <button onClick={() => setShowAddModal(false)}>×</button>
+                <div 
+                    className="modal fade show" 
+                    style={{ 
+                        display: 'block', 
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        zIndex: 1050
+                    }}
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) {
+                            setShowAddModal(false);
+                        }
+                    }}
+                >
+                    <div 
+                        className="modal-dialog" 
+                        style={{
+                            position: 'relative',
+                            margin: '1.75rem auto',
+                            maxWidth: '500px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            minHeight: 'calc(100vh - 3.5rem)'
+                        }}
+                    >
+                        <div className="modal-content assets-modal">
+                            <div className="modal-header assets-modal-header">
+                                <h5 className="modal-title assets-modal-title">
+                                    <i className="fas fa-plus me-2"></i>
+                                    添加新资产
+                                </h5>
+                                <button 
+                                    className="btn-close" 
+                                    onClick={() => setShowAddModal(false)}
+                                    style={{
+                                        position: 'absolute',
+                                        top: '1.5rem',
+                                        right: '2rem',
+                                        background: 'rgba(255, 255, 255, 0.2)',
+                                        border: 'none',
+                                        borderRadius: '50%',
+                                        width: '32px',
+                                        height: '32px',
+                                        color: 'white',
+                                        fontSize: '16px',
+                                        fontWeight: 'bold',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s ease',
+                                        zIndex: 10
+                                    }}
+                                    onMouseOver={(e) => {
+                                        e.target.style.background = 'rgba(255, 255, 255, 0.3)';
+                                        e.target.style.transform = 'scale(1.1)';
+                                    }}
+                                    onMouseOut={(e) => {
+                                        e.target.style.background = 'rgba(255, 255, 255, 0.2)';
+                                        e.target.style.transform = 'scale(1)';
+                                    }}
+                                >×</button>
                             </div>
-                            <div className="modal-body">
+                            <div className="modal-body assets-modal-body">
                                 <div className="mb-3">
-                                    <label className="form-label">资产名称</label>
+                                    <label className="form-label fw-bold">
+                                        <i className="fas fa-tag me-2" style={{ color: '#667eea' }}></i>
+                                        资产名称
+                                    </label>
                                     <input
                                         type="text"
                                         className="form-control"
                                         value={newAsset.name}
                                         onChange={(e) => setNewAsset({ ...newAsset, name: e.target.value })}
                                         placeholder="输入资产名称"
+                                        style={{
+                                            borderRadius: '8px',
+                                            border: '1px solid #e0e6ed',
+                                            padding: '0.75rem 1rem',
+                                            transition: 'all 0.2s ease',
+                                            fontSize: '1rem'
+                                        }}
                                     />
                                 </div>
                                 <div className="mb-3">
-                                    <label className="form-label">资产类别</label>
+                                    <label className="form-label fw-bold">
+                                        <i className="fas fa-list me-2" style={{ color: '#667eea' }}></i>
+                                        资产类别
+                                    </label>
                                     <select
                                         className="form-select"
                                         value={newAsset.categoryId}
                                         onChange={(e) => setNewAsset({ ...newAsset, categoryId: e.target.value })}
+                                        style={{
+                                            borderRadius: '8px',
+                                            border: '1px solid #e0e6ed',
+                                            padding: '0.75rem 1rem',
+                                            transition: 'all 0.2s ease',
+                                            fontSize: '1rem'
+                                        }}
                                     >
                                         {Array.isArray(assetCategories) && assetCategories.map((category) => (
                                             <option key={category.id} value={category.id}>
-                                                {category.icon} {category.name}
+                                                {(category.icon || '📊')} {(category.name || '未命名类别')}
                                             </option>
                                         ))}
                                     </select>
                                 </div>
                             </div>
-                            <div className="modal-footer">
-                                <button onClick={() => setShowAddModal(false)}>取消</button>
-                                <button onClick={handleAddAsset} className="primary">添加</button>
+                            <div className="modal-footer assets-modal-footer">
+                                <button 
+                                    className="btn btn-primary"
+                                    onClick={handleAddAsset}
+                                    style={{
+                                        borderRadius: '8px',
+                                        padding: '0.75rem 1.5rem',
+                                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                        border: 'none',
+                                        color: 'white',
+                                        fontWeight: '500',
+                                        boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+                                        transition: 'all 0.2s ease',
+                                        width: '100%'
+                                    }}
+                                >
+                                    <i className="fas fa-plus me-2"></i>
+                                    添加
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -614,25 +718,98 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
 
             {/* Add Record Modal */}
             {showRecordModal && selectedAsset && (
-                <div className="modal" style={{ display: 'block' }}>
-                    <div className="modal-dialog">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <h5 className="modal-title">为 {selectedAsset.name} 添加记录</h5>
-                                <button onClick={() => setShowRecordModal(false)}>×</button>
+                <div 
+                    className="modal fade show" 
+                    style={{ 
+                        display: 'block', 
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        zIndex: 1050
+                    }}
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) {
+                            setShowRecordModal(false);
+                        }
+                    }}
+                >
+                    <div 
+                        className="modal-dialog" 
+                        style={{
+                            position: 'relative',
+                            margin: '1.75rem auto',
+                            maxWidth: '500px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            minHeight: 'calc(100vh - 3.5rem)'
+                        }}
+                    >
+                        <div className="modal-content assets-modal">
+                            <div className="modal-header assets-modal-header">
+                                <h5 className="modal-title assets-modal-title">
+                                    <i className="fas fa-chart-line me-2"></i>
+                                    为 {selectedAsset.name} 添加记录
+                                </h5>
+                                <button 
+                                    className="btn-close" 
+                                    onClick={() => setShowRecordModal(false)}
+                                    style={{
+                                        position: 'absolute',
+                                        top: '1.5rem',
+                                        right: '2rem',
+                                        background: 'rgba(255, 255, 255, 0.2)',
+                                        border: 'none',
+                                        borderRadius: '50%',
+                                        width: '32px',
+                                        height: '32px',
+                                        color: 'white',
+                                        fontSize: '16px',
+                                        fontWeight: 'bold',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s ease',
+                                        zIndex: 10
+                                    }}
+                                    onMouseOver={(e) => {
+                                        e.target.style.background = 'rgba(255, 255, 255, 0.3)';
+                                        e.target.style.transform = 'scale(1.1)';
+                                    }}
+                                    onMouseOut={(e) => {
+                                        e.target.style.background = 'rgba(255, 255, 255, 0.2)';
+                                        e.target.style.transform = 'scale(1)';
+                                    }}
+                                >×</button>
                             </div>
-                            <div className="modal-body">
+                            <div className="modal-body assets-modal-body">
                                 <div className="mb-3">
-                                    <label className="form-label">日期</label>
+                                    <label className="form-label fw-bold">
+                                        <i className="fas fa-calendar me-2" style={{ color: '#667eea' }}></i>
+                                        日期
+                                    </label>
                                     <input
                                         type="date"
                                         className="form-control"
                                         value={newRecord.date}
                                         onChange={(e) => setNewRecord({ ...newRecord, date: e.target.value })}
+                                        style={{
+                                            borderRadius: '8px',
+                                            border: '1px solid #e0e6ed',
+                                            padding: '0.75rem 1rem',
+                                            transition: 'all 0.2s ease',
+                                            fontSize: '1rem'
+                                        }}
                                     />
                                 </div>
                                 <div className="mb-3">
-                                    <label className="form-label">金额</label>
+                                    <label className="form-label fw-bold">
+                                        <i className="fas fa-dollar-sign me-2" style={{ color: '#667eea' }}></i>
+                                        金额
+                                    </label>
                                     <input
                                         type="number"
                                         step="0.01"
@@ -640,21 +817,66 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
                                         value={newRecord.amount}
                                         onChange={(e) => setNewRecord({ ...newRecord, amount: e.target.value })}
                                         placeholder="输入金额"
+                                        style={{
+                                            borderRadius: '8px',
+                                            border: '1px solid #e0e6ed',
+                                            padding: '0.75rem 1rem',
+                                            transition: 'all 0.2s ease',
+                                            fontSize: '1rem'
+                                        }}
                                     />
                                 </div>
                             </div>
-                            <div className="modal-footer">
-                                <button onClick={() => setShowRecordModal(false)}>取消</button>
+                            <div className="modal-footer assets-modal-footer">
                                 <button 
+                                    className="btn btn-default me-2"
+                                    onClick={() => setShowRecordModal(false)}
+                                    style={{
+                                        borderRadius: '8px',
+                                        padding: '0.75rem 1.5rem',
+                                        border: '1px solid #e0e6ed',
+                                        background: 'white',
+                                        transition: 'all 0.2s ease'
+                                    }}
+                                >
+                                    取消
+                                </button>
+                                <button 
+                                    className="btn btn-danger me-2"
                                     onClick={() => {
                                         handleDeleteAsset(selectedAsset.id);
                                         setShowRecordModal(false);
                                     }}
-                                    className="danger"
+                                    style={{
+                                        borderRadius: '8px',
+                                        padding: '0.75rem 1.5rem',
+                                        background: 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)',
+                                        border: 'none',
+                                        color: 'white',
+                                        fontWeight: '500',
+                                        transition: 'all 0.2s ease'
+                                    }}
                                 >
+                                    <i className="fas fa-trash me-2"></i>
                                     删除资产
                                 </button>
-                                <button onClick={handleAddRecord} className="primary">保存</button>
+                                <button 
+                                    className="btn btn-primary"
+                                    onClick={handleAddRecord}
+                                    style={{
+                                        borderRadius: '8px',
+                                        padding: '0.75rem 1.5rem',
+                                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                        border: 'none',
+                                        color: 'white',
+                                        fontWeight: '500',
+                                        boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+                                        transition: 'all 0.2s ease'
+                                    }}
+                                >
+                                    <i className="fas fa-save me-2"></i>
+                                    保存
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -663,30 +885,85 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
 
             {/* Custom Delete Confirmation Modal */}
             {showDeleteConfirm && (
-                <div className="modal" style={{ display: 'block' }}>
-                    <div className="modal-dialog modal-sm">
-                        <div className="modal-content delete-confirm-modal">
-                            <div className="modal-header">
-                                <h5 className="modal-title">
-                                    <span className="delete-icon">⚠️</span>
+                <div 
+                    className="modal fade show" 
+                    style={{ 
+                        display: 'block', 
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        zIndex: 1050
+                    }}
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) {
+                            setShowDeleteConfirm(false);
+                        }
+                    }}
+                >
+                    <div 
+                        className="modal-dialog modal-sm" 
+                        style={{
+                            position: 'relative',
+                            margin: '1.75rem auto',
+                            maxWidth: '400px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            minHeight: 'calc(100vh - 3.5rem)'
+                        }}
+                    >
+                        <div className="modal-content assets-modal">
+                            <div className="modal-header assets-modal-header" style={{ background: 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)' }}>
+                                <h5 className="modal-title assets-modal-title">
+                                    <i className="fas fa-exclamation-triangle me-2"></i>
                                     确认删除
                                 </h5>
                             </div>
-                            <div className="modal-body">
-                                <p>确定要删除这个资产吗？</p>
-                                <p className="text-muted">删除后无法恢复，请谨慎操作。</p>
+                            <div className="modal-body assets-modal-body">
+                                <div className="text-center">
+                                    <div className="mb-3">
+                                        <i className="fas fa-exclamation-circle" style={{ fontSize: '3rem', color: '#dc3545' }}></i>
+                                    </div>
+                                    <p style={{ fontSize: '1.1rem', fontWeight: '500', marginBottom: '0.5rem' }}>
+                                        确定要删除这个资产吗？
+                                    </p>
+                                    <p className="text-muted" style={{ fontSize: '0.9rem' }}>
+                                        删除后无法恢复，请谨慎操作。
+                                    </p>
+                                </div>
                             </div>
-                            <div className="modal-footer">
+                            <div className="modal-footer assets-modal-footer">
                                 <button 
-                                    onClick={cancelDeleteAsset} 
-                                    className="btn btn-secondary"
+                                    className="btn btn-default me-2"
+                                    onClick={cancelDeleteAsset}
+                                    style={{
+                                        borderRadius: '8px',
+                                        padding: '0.75rem 1.5rem',
+                                        border: '1px solid #e0e6ed',
+                                        background: 'white',
+                                        transition: 'all 0.2s ease'
+                                    }}
                                 >
+                                    <i className="fas fa-times me-2"></i>
                                     取消
                                 </button>
                                 <button 
-                                    onClick={confirmDeleteAsset} 
                                     className="btn btn-danger"
+                                    onClick={confirmDeleteAsset}
+                                    style={{
+                                        borderRadius: '8px',
+                                        padding: '0.75rem 1.5rem',
+                                        background: 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)',
+                                        border: 'none',
+                                        color: 'white',
+                                        fontWeight: '500',
+                                        boxShadow: '0 4px 12px rgba(220, 53, 69, 0.3)',
+                                        transition: 'all 0.2s ease'
+                                    }}
                                 >
+                                    <i className="fas fa-trash me-2"></i>
                                     确认删除
                                 </button>
                             </div>
@@ -707,18 +984,20 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
                 footer={null}
                 width={800}
                 styles={{
-                    body: { padding: '24px' }
+                    body: { padding: '0' },
+                    mask: { backgroundColor: 'rgba(0, 0, 0, 0.5)' }
                 }}
+                wrapClassName="category-modal-wrap"
+                maskClosable={true}
             >
                 {/* Add New Category Form */}
                 <div style={{ 
-                    background: '#fafafa', 
-                    padding: '20px', 
-                    borderRadius: '8px',
+                    padding: '24px 0 0 0',
                     marginBottom: '24px'
                 }}>
-                    <h3 style={{ marginBottom: '16px', color: '#1890ff' }}>添加新类别</h3>
-                    <Form
+                    <h3 style={{ marginBottom: '16px', color: '#667eea', padding: '0 24px' }}>添加新类别</h3>
+                    <div style={{ padding: '0 24px' }}>
+                        <Form
                         form={form}
                         layout="horizontal"
                         onFinish={(values) => {
@@ -765,7 +1044,7 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
                                         size="large"
                                         onChange={(value) => {
                                             setNewCategory(prev => ({ ...prev, type: value, icon: '' }));
-                                            form.setFieldsValue({ icon: undefined });
+                                            form.setFieldsValue({ icon: '' });
                                         }}
                                     >
                                         <Select.Option value="asset">资产</Select.Option>
@@ -788,11 +1067,12 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
                             </Col>
                         </Row>
                     </Form>
+                    </div>
                 </div>
 
                 {/* Existing Categories List */}
-                <div>
-                    <h3 style={{ marginBottom: '16px', color: '#1890ff' }}>现有类别</h3>
+                <div style={{ padding: '0 24px 24px 24px' }}>
+                    <h3 style={{ marginBottom: '16px', color: '#667eea' }}>现有类别</h3>
                     <List
                         bordered
                         dataSource={assetCategories}
@@ -817,13 +1097,13 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
                                             width: '40px', 
                                             textAlign: 'center' 
                                         }}>
-                                            {category.icon}
+                                            {category.icon || '📊'}
                                         </div>
                                     }
                                     title={
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                             <span style={{ fontSize: '16px', fontWeight: 500 }}>
-                                                {category.name}
+                                                {category.name || '未命名类别'}
                                             </span>
                                             <Tag color={category.type === 'asset' ? 'green' : 'orange'}>
                                                 {category.type === 'asset' ? '资产' : '负债'}

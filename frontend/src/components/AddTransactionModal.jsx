@@ -102,9 +102,9 @@ const AddTransactionModal = ({
             onClick={handleBackdropClick}
         >
             <div className="modal-dialog modal-lg">
-                <div className="modal-content">
-                    <div className="modal-header">
-                        <h5 className="modal-title">
+                <div className="modal-content assets-modal">
+                    <div className="modal-header assets-modal-header">
+                        <h5 className="modal-title assets-modal-title">
                             <i className="fas fa-plus me-2"></i>
                             {lang === 'zh' ? '添加交易' : 'Add Transaction'}
                         </h5>
@@ -113,11 +113,42 @@ const AddTransactionModal = ({
                             className="btn-close" 
                             onClick={onClose}
                             disabled={saving}
-                        ></button>
+                            style={{
+                                position: 'absolute',
+                                top: '1.5rem',
+                                right: '2rem',
+                                background: 'rgba(255, 255, 255, 0.2)',
+                                border: 'none',
+                                borderRadius: '50%',
+                                width: '32px',
+                                height: '32px',
+                                color: 'white',
+                                fontSize: '16px',
+                                fontWeight: 'bold',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                zIndex: 10
+                            }}
+                            onMouseOver={(e) => {
+                                if (!saving) {
+                                    e.target.style.background = 'rgba(255, 255, 255, 0.3)';
+                                    e.target.style.transform = 'scale(1.1)';
+                                }
+                            }}
+                            onMouseOut={(e) => {
+                                if (!saving) {
+                                    e.target.style.background = 'rgba(255, 255, 255, 0.2)';
+                                    e.target.style.transform = 'scale(1)';
+                                }
+                            }}
+                        >×</button>
                     </div>
                     
                     <form onSubmit={handleSubmit}>
-                        <div className="modal-body">
+                        <div className="modal-body assets-modal-body">
                             {/* 交易类型选择 */}
                             <div className="mb-4">
                                 <label className="form-label fw-bold">
@@ -244,19 +275,37 @@ const AddTransactionModal = ({
                             </div>
                         </div>
 
-                        <div className="modal-footer">
+                        <div className="modal-footer assets-modal-footer">
                             <button 
                                 type="button" 
-                                className="btn btn-secondary" 
+                                className="btn btn-default me-2" 
                                 onClick={onClose}
                                 disabled={saving}
+                                style={{
+                                    borderRadius: '8px',
+                                    padding: '0.75rem 1.5rem',
+                                    border: '1px solid #e0e6ed',
+                                    background: 'white',
+                                    transition: 'all 0.2s ease'
+                                }}
                             >
+                                <i className="fas fa-times me-2"></i>
                                 {lang === 'zh' ? '取消' : 'Cancel'}
                             </button>
                             <button 
                                 type="submit" 
                                 className="btn btn-primary"
                                 disabled={saving}
+                                style={{
+                                    borderRadius: '8px',
+                                    padding: '0.75rem 1.5rem',
+                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                    border: 'none',
+                                    color: 'white',
+                                    fontWeight: '500',
+                                    boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+                                    transition: 'all 0.2s ease'
+                                }}
                             >
                                 {saving ? (
                                     <>

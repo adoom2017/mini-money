@@ -1,6 +1,29 @@
 import React, { useState } from 'react';
 
 const UserConfigPage = ({ user, onClose, onUpdatePassword, onUpdateEmail, onUpdateAvatar, onLogout, t }) => {
+    console.log('UserConfigPage rendered with:', { user, t });
+    
+    // 添加防御性检查
+    if (!user) {
+        console.log('User is null, showing loading...');
+        return (
+            <div className="user-settings-page">
+                <div className="page-header">
+                    <h2 className="page-title">加载中...</h2>
+                </div>
+                <div className="settings-content">
+                    <p>用户信息加载中...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // 确保t函数有默认值
+    const translate = t || ((key) => {
+        console.log('Using fallback translation for:', key);
+        return key;
+    });
+
     const [activeTab, setActiveTab] = useState('profile');
     const [passwordData, setPasswordData] = useState({
         currentPassword: '',
@@ -16,11 +39,11 @@ const UserConfigPage = ({ user, onClose, onUpdatePassword, onUpdateEmail, onUpda
     const handlePasswordSubmit = async (e) => {
         e.preventDefault();
         if (passwordData.newPassword !== passwordData.confirmPassword) {
-            alert(t('passwords_not_match') || 'New passwords do not match');
+            alert(translate('passwords_not_match') || 'New passwords do not match');
             return;
         }
         if (passwordData.newPassword.length < 6) {
-            alert(t('password_min_length') || 'Password must be at least 6 characters long');
+            alert(translate('password_min_length') || 'Password must be at least 6 characters long');
             return;
         }
 
@@ -39,7 +62,7 @@ const UserConfigPage = ({ user, onClose, onUpdatePassword, onUpdateEmail, onUpda
     const handleEmailSubmit = async (e) => {
         e.preventDefault();
         if (!emailData.email || !emailData.password) {
-            alert(t('fill_all_fields') || 'Please fill in all fields');
+            alert(translate('fill_all_fields') || 'Please fill in all fields');
             return;
         }
 
@@ -59,7 +82,7 @@ const UserConfigPage = ({ user, onClose, onUpdatePassword, onUpdateEmail, onUpda
         const file = event.target.files[0];
         if (file) {
             if (file.size > 2 * 1024 * 1024) { // 2MB limit
-                alert(t('file_too_large') || 'File size must be less than 2MB');
+                alert(translate('file_too_large') || 'File size must be less than 2MB');
                 return;
             }
             
@@ -72,68 +95,62 @@ const UserConfigPage = ({ user, onClose, onUpdatePassword, onUpdateEmail, onUpda
     };
 
     return (
-        <div className="modal d-block user-config-page" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-            <div className="modal-dialog modal-dialog-centered">
-                <div className="modal-content">
-                    <div className="modal-header border-bottom">
-                        <h5 className="modal-title d-flex align-items-center">
-                            <i className="fas fa-cog me-2 text-primary"></i>
-                            {t('user_settings') || '用户设置'}
-                        </h5>
-                        <button 
-                            type="button" 
-                            className="btn-close" 
-                            onClick={onClose}
-                            aria-label="Close"
-                        ></button>
-                    </div>
-                    
-                    <div className="modal-body">
-                        {/* 标签页导航 */}
-                        <ul className="nav nav-tabs">
-                            <li className="nav-item">
-                                <button
-                                    className={`nav-link ${activeTab === 'profile' ? 'active' : ''}`}
-                                    onClick={() => setActiveTab('profile')}
-                                >
-                                    <i className="fas fa-user me-1"></i>
-                                    {t('profile') || '资料'}
-                                </button>
-                            </li>
-                            <li className="nav-item">
-                                <button
-                                    className={`nav-link ${activeTab === 'avatar' ? 'active' : ''}`}
-                                    onClick={() => setActiveTab('avatar')}
-                                >
-                                    <i className="fas fa-image me-1"></i>
-                                    {t('change_avatar') || '头像'}
-                                </button>
-                            </li>
-                            <li className="nav-item">
-                                <button
-                                    className={`nav-link ${activeTab === 'password' ? 'active' : ''}`}
-                                    onClick={() => setActiveTab('password')}
-                                >
-                                    <i className="fas fa-lock me-1"></i>
-                                    {t('change_password') || '密码'}
-                                </button>
-                            </li>
-                            <li className="nav-item">
-                                <button
-                                    className={`nav-link ${activeTab === 'email' ? 'active' : ''}`}
-                                    onClick={() => setActiveTab('email')}
-                                >
-                                    <i className="fas fa-envelope me-1"></i>
-                                    {t('change_email') || '邮箱'}
-                                </button>
-                            </li>
-                        </ul>
+        <div className="user-settings-page">
+            <div className="page-header">
+                <h2 className="page-title">
+                    <i className="fas fa-cog me-2"></i>
+                    {translate('user_settings') || '用户设置'}
+                </h2>
+            </div>
+            
+            <div className="settings-content">
+                {/* 标签页导航 */}
+                <ul className="nav nav-tabs mb-4">
+                    <li className="nav-item">
+                        <button
+                            className={`nav-link ${activeTab === 'profile' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('profile')}
+                        >
+                            <i className="fas fa-user me-1"></i>
+                            {translate('profile') || '资料'}
+                        </button>
+                    </li>
+                    <li className="nav-item">
+                        <button
+                            className={`nav-link ${activeTab === 'avatar' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('avatar')}
+                        >
+                            <i className="fas fa-image me-1"></i>
+                            {translate('change_avatar') || '头像'}
+                        </button>
+                    </li>
+                    <li className="nav-item">
+                        <button
+                            className={`nav-link ${activeTab === 'password' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('password')}
+                        >
+                            <i className="fas fa-lock me-1"></i>
+                            {translate('change_password') || '密码'}
+                        </button>
+                    </li>
+                    <li className="nav-item">
+                        <button
+                            className={`nav-link ${activeTab === 'email' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('email')}
+                        >
+                            <i className="fas fa-envelope me-1"></i>
+                            {translate('change_email') || '邮箱'}
+                        </button>
+                    </li>
+                </ul>
 
-                        {/* 标签页内容 */}
-                        <div className="tab-content">
-                            {/* 个人资料标签页 */}
-                            {activeTab === 'profile' && (
-                                <div className="tab-pane fade show active">
+                {/* 标签页内容 */}
+                <div className="tab-content">
+                    {/* 个人资料标签页 */}
+                    {activeTab === 'profile' && (
+                        <div className="tab-pane fade show active">
+                            <div className="card">
+                                <div className="card-body">
                                     <div className="row align-items-center">
                                         <div className="col-md-4 text-center">
                                             <div className="avatar-preview mx-auto mb-3" style={{
@@ -166,7 +183,7 @@ const UserConfigPage = ({ user, onClose, onUpdatePassword, onUpdateEmail, onUpda
                                             <div className="mb-3">
                                                 <label className="form-label fw-bold">
                                                     <i className="fas fa-user me-2"></i>
-                                                    {t('username') || '用户名'}
+                                                    {translate('username') || '用户名'}
                                                 </label>
                                                 <input
                                                     type="text"
@@ -175,62 +192,65 @@ const UserConfigPage = ({ user, onClose, onUpdatePassword, onUpdateEmail, onUpda
                                                     disabled
                                                 />
                                                 <small className="text-muted">
-                                                    {t('username_cannot_change') || '用户名不可修改'}
+                                                    {translate('username_cannot_change') || '用户名不可修改'}
                                                 </small>
                                             </div>
                                             <div className="mb-3">
                                                 <label className="form-label fw-bold">
                                                     <i className="fas fa-envelope me-2"></i>
-                                                    {t('email') || '邮箱'}
+                                                    {translate('email') || '邮箱'}
                                                 </label>
                                                 <input
                                                     type="email"
                                                     className="form-control"
-                                                    value={user.email || t('not_set') || '未设置'}
+                                                    value={user.email || '未设置'}
                                                     disabled
                                                 />
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            )}
+                            </div>
+                        </div>
+                    )}
 
-                            {/* 更换头像标签页 */}
-                            {activeTab === 'avatar' && (
-                                <div className="tab-pane fade show active">
-                                    <div className="text-center mb-4">
-                                        <div className="avatar-preview mx-auto mb-3" style={{
-                                            width: '120px',
-                                            height: '120px',
-                                            borderRadius: '50%',
-                                            overflow: 'hidden',
-                                            backgroundColor: '#e9ecef',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            border: '3px solid #dee2e6'
-                                        }}>
-                                            {user.avatar ? (
-                                                <img
-                                                    src={user.avatar}
-                                                    alt="Avatar"
-                                                    style={{
-                                                        width: '100%',
-                                                        height: '100%',
-                                                        objectFit: 'cover'
-                                                    }}
-                                                />
-                                            ) : (
-                                                <span style={{ fontSize: '3em' }}>👤</span>
-                                            )}
+                    {/* 更换头像标签页 */}
+                    {activeTab === 'avatar' && (
+                        <div className="tab-pane fade show active">
+                            <div className="card">
+                                <div className="card-body">
+                                    <div className="row">
+                                        <div className="col-md-4 text-center">
+                                            <div className="avatar-preview mx-auto mb-3" style={{
+                                                width: '150px',
+                                                height: '150px',
+                                                borderRadius: '50%',
+                                                overflow: 'hidden',
+                                                backgroundColor: '#e9ecef',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                border: '3px solid #dee2e6'
+                                            }}>
+                                                {user.avatar ? (
+                                                    <img
+                                                        src={user.avatar}
+                                                        alt="Avatar"
+                                                        style={{
+                                                            width: '100%',
+                                                            height: '100%',
+                                                            objectFit: 'cover'
+                                                        }}
+                                                    />
+                                                ) : (
+                                                    <span style={{ fontSize: '4em' }}>👤</span>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                    
-                                    <div className="card">
-                                        <div className="card-body">
+                                        <div className="col-md-8">
                                             <div className="mb-3">
                                                 <label className="form-label fw-bold">
-                                                    {t('upload_new_avatar') || '上传新头像'}
+                                                    {translate('upload_new_avatar') || '上传新头像'}
                                                 </label>
                                                 <input
                                                     type="file"
@@ -239,7 +259,7 @@ const UserConfigPage = ({ user, onClose, onUpdatePassword, onUpdateEmail, onUpda
                                                     onChange={handleAvatarUpload}
                                                 />
                                                 <small className="text-muted">
-                                                    {t('avatar_requirements') || '支持 JPG、PNG 格式，文件大小不超过 2MB'}
+                                                    {translate('avatar_requirements') || '支持 JPG、PNG 格式，文件大小不超过 2MB'}
                                                 </small>
                                             </div>
                                             
@@ -250,173 +270,167 @@ const UserConfigPage = ({ user, onClose, onUpdatePassword, onUpdateEmail, onUpda
                                                         onClick={() => onUpdateAvatar(null)}
                                                     >
                                                         <i className="fas fa-trash me-2"></i>
-                                                        {t('remove_avatar') || '移除头像'}
+                                                        {translate('remove_avatar') || '移除头像'}
                                                     </button>
                                                 </div>
                                             )}
                                         </div>
                                     </div>
                                 </div>
-                            )}
-
-                            {/* 修改密码标签页 */}
-                            {activeTab === 'password' && (
-                                <div className="tab-pane fade show active">
-                                    <div className="card">
-                                        <div className="card-body">
-                                            <form onSubmit={handlePasswordSubmit}>
-                                                <div className="mb-3">
-                                                    <label className="form-label fw-bold">
-                                                        <i className="fas fa-key me-2"></i>
-                                                        {t('current_password') || '当前密码'}
-                                                    </label>
-                                                    <input
-                                                        type="password"
-                                                        className="form-control"
-                                                        value={passwordData.currentPassword}
-                                                        onChange={(e) => setPasswordData({
-                                                            ...passwordData,
-                                                            currentPassword: e.target.value
-                                                        })}
-                                                        required
-                                                    />
-                                                </div>
-                                                <div className="mb-3">
-                                                    <label className="form-label fw-bold">
-                                                        <i className="fas fa-lock me-2"></i>
-                                                        {t('new_password') || '新密码'}
-                                                    </label>
-                                                    <input
-                                                        type="password"
-                                                        className="form-control"
-                                                        value={passwordData.newPassword}
-                                                        onChange={(e) => setPasswordData({
-                                                            ...passwordData,
-                                                            newPassword: e.target.value
-                                                        })}
-                                                        minLength="6"
-                                                        required
-                                                    />
-                                                    <small className="text-muted">
-                                                        {t('password_min_6_chars') || '密码至少 6 个字符'}
-                                                    </small>
-                                                </div>
-                                                <div className="mb-4">
-                                                    <label className="form-label fw-bold">
-                                                        <i className="fas fa-check-circle me-2"></i>
-                                                        {t('confirm_new_password') || '确认新密码'}
-                                                    </label>
-                                                    <input
-                                                        type="password"
-                                                        className="form-control"
-                                                        value={passwordData.confirmPassword}
-                                                        onChange={(e) => setPasswordData({
-                                                            ...passwordData,
-                                                            confirmPassword: e.target.value
-                                                        })}
-                                                        required
-                                                    />
-                                                </div>
-                                                <div className="text-center">
-                                                    <button
-                                                        type="submit"
-                                                        className="btn btn-primary"
-                                                        disabled={isLoading}
-                                                    >
-                                                        {isLoading ? (
-                                                            <><i className="fas fa-spinner fa-spin me-2"></i>{t('updating') || '更新中...'}</>
-                                                        ) : (
-                                                            <><i className="fas fa-save me-2"></i>{t('update_password') || '更新密码'}</>
-                                                        )}
-                                                    </button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* 修改邮箱标签页 */}
-                            {activeTab === 'email' && (
-                                <div className="tab-pane fade show active">
-                                    <div className="card">
-                                        <div className="card-body">
-                                            <form onSubmit={handleEmailSubmit}>
-                                                <div className="mb-3">
-                                                    <label className="form-label fw-bold">
-                                                        <i className="fas fa-envelope me-2"></i>
-                                                        {t('new_email') || '新邮箱地址'}
-                                                    </label>
-                                                    <input
-                                                        type="email"
-                                                        className="form-control"
-                                                        value={emailData.email}
-                                                        onChange={(e) => setEmailData({
-                                                            ...emailData,
-                                                            email: e.target.value
-                                                        })}
-                                                        required
-                                                    />
-                                                </div>
-                                                <div className="mb-4">
-                                                    <label className="form-label fw-bold">
-                                                        <i className="fas fa-key me-2"></i>
-                                                        {t('confirm_password') || '确认密码'}
-                                                    </label>
-                                                    <input
-                                                        type="password"
-                                                        className="form-control"
-                                                        value={emailData.password}
-                                                        onChange={(e) => setEmailData({
-                                                            ...emailData,
-                                                            password: e.target.value
-                                                        })}
-                                                        placeholder={t('enter_password_to_confirm') || '输入密码以确认修改'}
-                                                        required
-                                                    />
-                                                </div>
-                                                <div className="text-center">
-                                                    <button
-                                                        type="submit"
-                                                        className="btn btn-primary"
-                                                        disabled={isLoading}
-                                                    >
-                                                        {isLoading ? (
-                                                            <><i className="fas fa-spinner fa-spin me-2"></i>{t('updating') || '更新中...'}</>
-                                                        ) : (
-                                                            <><i className="fas fa-save me-2"></i>{t('update_email') || '更新邮箱'}</>
-                                                        )}
-                                                    </button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
+                            </div>
                         </div>
-                    </div>
-                    
-                    {/* 底部操作栏 */}
-                    <div className="modal-footer border-top d-flex justify-content-between">
-                        <button
-                            className="btn btn-outline-danger"
-                            onClick={() => {
-                                if (confirm(t('confirm_logout') || '确定要登出吗？')) {
-                                    onLogout();
-                                    onClose();
-                                }
-                            }}
-                        >
-                            <i className="fas fa-sign-out-alt me-2"></i>
-                            {t('logout') || '登出'}
-                        </button>
-                        <button
-                            className="btn btn-secondary"
-                            onClick={onClose}
-                        >
-                            {t('close') || '关闭'}
-                        </button>
-                    </div>
+                    )}
+
+                    {/* 修改密码标签页 */}
+                    {activeTab === 'password' && (
+                        <div className="tab-pane fade show active">
+                            <div className="card">
+                                <div className="card-body">
+                                    <form onSubmit={handlePasswordSubmit}>
+                                        <div className="mb-3">
+                                            <label className="form-label fw-bold">
+                                                <i className="fas fa-key me-2"></i>
+                                                {translate('current_password') || '当前密码'}
+                                            </label>
+                                            <input
+                                                type="password"
+                                                className="form-control"
+                                                value={passwordData.currentPassword}
+                                                onChange={(e) => setPasswordData({
+                                                    ...passwordData,
+                                                    currentPassword: e.target.value
+                                                })}
+                                                required
+                                            />
+                                        </div>
+                                        <div className="mb-3">
+                                            <label className="form-label fw-bold">
+                                                <i className="fas fa-lock me-2"></i>
+                                                {translate('new_password') || '新密码'}
+                                            </label>
+                                            <input
+                                                type="password"
+                                                className="form-control"
+                                                value={passwordData.newPassword}
+                                                onChange={(e) => setPasswordData({
+                                                    ...passwordData,
+                                                    newPassword: e.target.value
+                                                })}
+                                                minLength="6"
+                                                required
+                                            />
+                                            <small className="text-muted">
+                                                {translate('password_min_6_chars') || '密码至少 6 个字符'}
+                                            </small>
+                                        </div>
+                                        <div className="mb-4">
+                                            <label className="form-label fw-bold">
+                                                <i className="fas fa-check-circle me-2"></i>
+                                                {translate('confirm_new_password') || '确认新密码'}
+                                            </label>
+                                            <input
+                                                type="password"
+                                                className="form-control"
+                                                value={passwordData.confirmPassword}
+                                                onChange={(e) => setPasswordData({
+                                                    ...passwordData,
+                                                    confirmPassword: e.target.value
+                                                })}
+                                                required
+                                            />
+                                        </div>
+                                        <div className="text-center">
+                                            <button
+                                                type="submit"
+                                                className="btn btn-primary"
+                                                disabled={isLoading}
+                                            >
+                                                {isLoading ? (
+                                                    <><i className="fas fa-spinner fa-spin me-2"></i>{translate('updating') || '更新中...'}</>
+                                                ) : (
+                                                    <><i className="fas fa-save me-2"></i>{translate('update_password') || '更新密码'}</>
+                                                )}
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 修改邮箱标签页 */}
+                    {activeTab === 'email' && (
+                        <div className="tab-pane fade show active">
+                            <div className="card">
+                                <div className="card-body">
+                                    <form onSubmit={handleEmailSubmit}>
+                                        <div className="mb-3">
+                                            <label className="form-label fw-bold">
+                                                <i className="fas fa-envelope me-2"></i>
+                                                {translate('new_email') || '新邮箱地址'}
+                                            </label>
+                                            <input
+                                                type="email"
+                                                className="form-control"
+                                                value={emailData.email}
+                                                onChange={(e) => setEmailData({
+                                                    ...emailData,
+                                                    email: e.target.value
+                                                })}
+                                                required
+                                            />
+                                        </div>
+                                        <div className="mb-4">
+                                            <label className="form-label fw-bold">
+                                                <i className="fas fa-key me-2"></i>
+                                                {translate('confirm_password') || '确认密码'}
+                                            </label>
+                                            <input
+                                                type="password"
+                                                className="form-control"
+                                                value={emailData.password}
+                                                onChange={(e) => setEmailData({
+                                                    ...emailData,
+                                                    password: e.target.value
+                                                })}
+                                                placeholder={translate('enter_password_to_confirm') || '输入密码以确认修改'}
+                                                required
+                                            />
+                                        </div>
+                                        <div className="text-center">
+                                            <button
+                                                type="submit"
+                                                className="btn btn-primary"
+                                                disabled={isLoading}
+                                            >
+                                                {isLoading ? (
+                                                    <><i className="fas fa-spinner fa-spin me-2"></i>{translate('updating') || '更新中...'}</>
+                                                ) : (
+                                                    <><i className="fas fa-save me-2"></i>{translate('update_email') || '更新邮箱'}</>
+                                                )}
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+                
+                {/* 底部操作栏 */}
+                <div className="settings-footer mt-4 pt-4 border-top">
+                    <button
+                        className="btn btn-outline-danger"
+                        onClick={() => {
+                            if (confirm(translate('confirm_logout') || '确定要登出吗？')) {
+                                onLogout();
+                                onClose();
+                            }
+                        }}
+                    >
+                        <i className="fas fa-sign-out-alt me-2"></i>
+                        {translate('logout') || '登出'}
+                    </button>
                 </div>
             </div>
         </div>

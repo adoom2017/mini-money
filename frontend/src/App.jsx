@@ -757,8 +757,15 @@ const App = () => {
                             </a>
                             <a 
                                 href="#" 
-                                className="nav-item"
-                                onClick={(e) => { e.preventDefault(); setShowUserConfig(true); }}
+                                className={`nav-item ${page === 'settings' ? 'active' : ''}`}
+                                onClick={(e) => { 
+                                    e.preventDefault(); 
+                                    if (user && isAuthenticated) {
+                                        setPage('settings');
+                                    } else {
+                                        console.log('User not authenticated, cannot open settings');
+                                    }
+                                }}
                             >
                                 <i className="fas fa-cog"></i>
                                 <span>设置</span>
@@ -823,6 +830,17 @@ const App = () => {
                             )}
                             {page === 'assets' && (
                                 <AssetsPage {...commonProps} />
+                            )}
+                            {page === 'settings' && (
+                                <UserConfigPage
+                                    user={user}
+                                    onClose={() => setPage('home')}
+                                    onUpdatePassword={updatePassword}
+                                    onUpdateEmail={updateEmail}
+                                    onUpdateAvatar={updateAvatar}
+                                    onLogout={logout}
+                                    t={t}
+                                />
                             )}
                             {page === 'config' && (
                                 <UserConfigPage
@@ -897,20 +915,6 @@ const App = () => {
                                             )}
                                         </div>
                                     </div>
-                                    
-                                    {/* User Config Button */}
-                                    <button
-                                        className="btn btn-outline-primary btn-sm me-2"
-                                        onClick={() => setShowUserConfig(true)}
-                                        title={t('user_settings') || '用户设置'}
-                                        style={{
-                                            borderRadius: '10px',
-                                            padding: '0.5rem 0.75rem'
-                                        }}
-                                    >
-                                        <i className="fas fa-cog me-1"></i>
-                                        <span className="d-none d-md-inline">{t('settings') || '设置'}</span>
-                                    </button>
                                 </div>
                             )}
                             <button
@@ -1004,18 +1008,6 @@ const App = () => {
                 />
             )}
 
-            {/* User Config Page */}
-            {showUserConfig && (
-                <UserConfigPage
-                    user={user}
-                    onClose={() => setShowUserConfig(false)}
-                    onUpdatePassword={updatePassword}
-                    onUpdateEmail={updateEmail}
-                    onUpdateAvatar={updateAvatar}
-                    onLogout={logout}
-                    t={t}
-                />
-            )}
         </div>
     );
 };
