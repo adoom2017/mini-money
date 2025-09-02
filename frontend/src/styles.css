@@ -5352,10 +5352,22 @@ html {
 .modal.fade.show {
     background: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)) !important;
     backdrop-filter: blur(8px);
-    animation: modalFadeIn 0.3s ease-out;
+    animation: modalBackdropFadeIn 0.2s ease-out;
 }
 
+/* 统一的Modal动画定义 */
 @keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes modalBackdropFadeIn {
     from {
         opacity: 0;
         backdrop-filter: blur(0px);
@@ -6437,7 +6449,50 @@ textarea.form-control {
     width: 100% !important;
     height: 100% !important;
     font-size: 16px !important;
-    color: white !important;
+    color: rgba(0, 0, 0, 0.45) !important;
+    font-weight: bold !important;
+}
+
+/* 为Bootstrap模态框中的ant-modal-close样式添加支持 */
+.modal .ant-modal-close {
+    position: absolute !important;
+    top: 16px !important;
+    right: 16px !important;
+    z-index: 10 !important;
+    padding: 0 !important;
+    color: rgba(0, 0, 0, 0.8) !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    text-decoration: none !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    border-radius: 50% !important;
+    cursor: pointer !important;
+    width: 28px !important;
+    height: 28px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.modal .ant-modal-close:hover {
+    color: rgba(255, 255, 255, 1) !important;
+    background: rgba(102, 126, 234, 0.9) !important;
+    border-color: rgba(102, 126, 234, 0.9) !important;
+    transform: scale(1.1) !important;
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3) !important;
+}
+
+.modal .ant-modal-close .ant-modal-close-x {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    font-size: 16px !important;
+    color: inherit !important;
     font-weight: bold !important;
 }
 
@@ -6573,7 +6628,7 @@ textarea.form-control {
     padding: 0 !important;
     margin: 0 !important;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
-    animation: modalFadeIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    animation: modalFadeIn 0.2s ease-out !important;
     transform-origin: center center !important;
 }
 
@@ -6592,17 +6647,6 @@ textarea.form-control {
 }
 
 /* Bootstrap Modal 弹出动画 */
-@keyframes modalFadeIn {
-    from {
-        opacity: 0;
-        transform: scale(0.7) translateY(-50px);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
-}
-
 @keyframes modalBackdropFadeIn {
     from {
         opacity: 0;
@@ -6614,23 +6658,23 @@ textarea.form-control {
 
 /* 为添加资产Modal添加动画类 */
 .modal.fade.show {
-    animation: modalBackdropFadeIn 0.15s ease-out;
+    animation: modalBackdropFadeIn 0.2s ease-out;
 }
 
 .modal.fade.show .modal-content {
-    animation: modalFadeIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: modalFadeIn 0.2s ease-out;
     transform-origin: center center;
 }
 
 /* 为所有assets-modal添加统一动画 */
 .assets-modal {
-    animation: modalFadeIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    animation: modalFadeIn 0.2s ease-out !important;
     transform-origin: center center !important;
 }
 
 /* 确保动画在显示时生效 */
 .modal.show .assets-modal {
-    animation: modalFadeIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: modalFadeIn 0.2s ease-out;
 }
 
 /* 添加弹性动画效果 */
@@ -6659,19 +6703,62 @@ textarea.form-control {
 
 /* 响应式动画调整 */
 @media (max-width: 768px) {
-    @keyframes modalFadeIn {
-        from {
-            opacity: 0;
-            transform: scale(0.8) translateY(-30px);
-        }
-        to {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-        }
-    }
-    
     .modal.fade.show .modal-content,
     .assets-modal {
         animation: modalFadeIn 0.2s ease-out !important;
+    }
+}
+
+/* 悬浮添加按钮样式 */
+.floating-add-btn {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.floating-add-btn:hover {
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+}
+
+.floating-add-btn:active {
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .floating-add-btn {
+        bottom: 1.5rem;
+        right: 1.5rem;
+        width: 50px;
+        height: 50px;
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .floating-add-btn {
+        bottom: 1rem;
+        right: 1rem;
+        width: 48px;
+        height: 48px;
+        font-size: 15px;
     }
 }

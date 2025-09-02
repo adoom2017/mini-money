@@ -448,12 +448,6 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
                     >
                         管理类别
                     </button>
-                    <button 
-                        onClick={() => setShowAddModal(true)} 
-                        className="add-asset-btn-header"
-                    >
-                        + 添加资产
-                    </button>
                 </div>
             </div>
 
@@ -614,36 +608,41 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
                                     添加新资产
                                 </h5>
                                 <button 
-                                    className="btn-close" 
+                                    className="ant-modal-close" 
                                     onClick={() => setShowAddModal(false)}
                                     style={{
                                         position: 'absolute',
-                                        top: '1.5rem',
-                                        right: '2rem',
-                                        background: 'rgba(255, 255, 255, 0.2)',
-                                        border: 'none',
-                                        borderRadius: '50%',
-                                        width: '32px',
-                                        height: '32px',
-                                        color: 'white',
-                                        fontSize: '16px',
-                                        fontWeight: 'bold',
+                                        top: '16px',
+                                        right: '16px',
+                                        zIndex: 10,
+                                        padding: 0,
+                                        color: 'rgba(0, 0, 0, 0.45)',
+                                        fontWeight: 700,
+                                        lineHeight: 1,
+                                        textDecoration: 'none',
+                                        background: 'transparent',
+                                        border: 0,
+                                        cursor: 'pointer',
+                                        width: '22px',
+                                        height: '22px',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s ease',
-                                        zIndex: 10
+                                        transition: 'color 0.2s ease',
                                     }}
                                     onMouseOver={(e) => {
-                                        e.target.style.background = 'rgba(255, 255, 255, 0.3)';
-                                        e.target.style.transform = 'scale(1.1)';
+                                        e.target.style.color = 'rgba(0, 0, 0, 0.75)';
                                     }}
                                     onMouseOut={(e) => {
-                                        e.target.style.background = 'rgba(255, 255, 255, 0.2)';
-                                        e.target.style.transform = 'scale(1)';
+                                        e.target.style.color = 'rgba(0, 0, 0, 0.45)';
                                     }}
-                                >×</button>
+                                >
+                                    <span className="ant-modal-close-x">
+                                        <svg width="16" height="16" viewBox="0 0 1024 1024" fill="currentColor">
+                                            <path d="M799.86 166.31c.02 0 .04.02.08.06l57.69 57.7c.04.03.05.05.06.08a.12.12 0 010 .06c0 .03-.02.05-.06.09L569.93 512l287.7 287.7c.04.04.05.06.06.09a.12.12 0 010 .07c0 .02-.02.04-.06.08l-57.7 57.69c-.03.04-.05.05-.07.06a.12.12 0 01-.07 0c-.03 0-.05-.02-.09-.06L512 569.93l-287.7 287.7c-.04.04-.06.05-.09.06a.12.12 0 01-.07 0c-.02 0-.04-.02-.08-.06l-57.69-57.7c-.04-.03-.05-.05-.06-.07a.12.12 0 010-.07c0-.03.02-.05.06-.09L454.07 512l-287.7-287.7c-.04-.04-.05-.06-.06-.09a.12.12 0 010-.07c0-.02.02-.04.06-.08l57.7-57.69c.03-.04.05-.05.07-.06a.12.12 0 01.07 0c.03 0 .05.02.09.06L512 454.07l287.7-287.7c.04-.04.06-.05.09-.06a.12.12 0 01.07 0z"/>
+                                        </svg>
+                                    </span>
+                                </button>
                             </div>
                             <div className="modal-body assets-modal-body">
                                 <div className="mb-3">
@@ -754,36 +753,39 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
                                     为 {selectedAsset.name} 添加记录
                                 </h5>
                                 <button 
-                                    className="btn-close" 
+                                    className="ant-modal-close" 
                                     onClick={() => setShowRecordModal(false)}
                                     style={{
                                         position: 'absolute',
-                                        top: '1.5rem',
-                                        right: '2rem',
-                                        background: 'rgba(255, 255, 255, 0.2)',
-                                        border: 'none',
-                                        borderRadius: '50%',
-                                        width: '32px',
-                                        height: '32px',
-                                        color: 'white',
-                                        fontSize: '16px',
-                                        fontWeight: 'bold',
+                                        top: '16px',
+                                        right: '16px',
+                                        zIndex: 10,
+                                        padding: 0,
+                                        color: 'rgba(0, 0, 0, 0.45)',
+                                        fontWeight: 700,
+                                        lineHeight: 1,
+                                        textDecoration: 'none',
+                                        background: 'transparent',
+                                        border: 0,
+                                        cursor: 'pointer',
+                                        width: '22px',
+                                        height: '22px',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s ease',
-                                        zIndex: 10
+                                        transition: 'color 0.2s ease',
                                     }}
                                     onMouseOver={(e) => {
-                                        e.target.style.background = 'rgba(255, 255, 255, 0.3)';
-                                        e.target.style.transform = 'scale(1.1)';
+                                        e.target.style.color = 'rgba(0, 0, 0, 0.75)';
                                     }}
                                     onMouseOut={(e) => {
-                                        e.target.style.background = 'rgba(255, 255, 255, 0.2)';
-                                        e.target.style.transform = 'scale(1)';
+                                        e.target.style.color = 'rgba(0, 0, 0, 0.45)';
                                     }}
-                                >×</button>
+                                >
+                                    <span className="ant-modal-close-x">
+                                        ×
+                                    </span>
+                                </button>
                             </div>
                             <div className="modal-body assets-modal-body">
                                 <div className="mb-3">
@@ -1116,6 +1118,15 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
                     />
                 </div>
             </Modal>
+
+            {/* 悬浮添加按钮 */}
+            <button 
+                onClick={() => setShowAddModal(true)} 
+                className="floating-add-btn"
+                title="添加资产"
+            >
+                <i className="fas fa-plus"></i>
+            </button>
         </div>
     );
 };

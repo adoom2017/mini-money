@@ -21,7 +21,7 @@ const AddTransactionModal = ({
     });
     const [saving, setSaving] = useState(false);
 
-    const expenseCategories = ['food', 'medical', 'transport', 'housing', 'snacks', 'learning', 'communication', 'social', 'investment', 'shopping', 'other'];
+    const expenseCategories = ['food', 'medical', 'transport', 'housing', 'snacks', 'learning', 'communication', 'social', 'investment', 'shopping', 'entertainment', 'other'];
     const incomeCategories = ['salary', 'part_time', 'financial', 'red_packet', 'other'];
 
     const getCurrentCategories = () => {
@@ -101,7 +101,7 @@ const AddTransactionModal = ({
             tabIndex="-1"
             onClick={handleBackdropClick}
         >
-            <div className="modal-dialog modal-lg">
+            <div className="modal-dialog modal-md">
                 <div className="modal-content assets-modal">
                     <div className="modal-header assets-modal-header">
                         <h5 className="modal-title assets-modal-title">
@@ -110,41 +110,42 @@ const AddTransactionModal = ({
                         </h5>
                         <button 
                             type="button" 
-                            className="btn-close" 
+                            className="ant-modal-close" 
                             onClick={onClose}
                             disabled={saving}
                             style={{
                                 position: 'absolute',
-                                top: '1.5rem',
-                                right: '2rem',
-                                background: 'rgba(255, 255, 255, 0.2)',
-                                border: 'none',
-                                borderRadius: '50%',
-                                width: '32px',
-                                height: '32px',
-                                color: 'white',
-                                fontSize: '16px',
-                                fontWeight: 'bold',
+                                top: '16px',
+                                right: '16px',
+                                zIndex: 10,
+                                padding: 0,
+                                color: 'rgba(0, 0, 0, 0.45)',
+                                fontWeight: 700,
+                                lineHeight: 1,
+                                textDecoration: 'none',
+                                background: 'transparent',
+                                border: 0,
+                                cursor: 'pointer',
+                                width: '22px',
+                                height: '22px',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease',
-                                zIndex: 10
+                                transition: 'color 0.2s ease',
                             }}
                             onMouseOver={(e) => {
-                                if (!saving) {
-                                    e.target.style.background = 'rgba(255, 255, 255, 0.3)';
-                                    e.target.style.transform = 'scale(1.1)';
-                                }
+                                e.target.style.color = 'rgba(0, 0, 0, 0.75)';
                             }}
                             onMouseOut={(e) => {
-                                if (!saving) {
-                                    e.target.style.background = 'rgba(255, 255, 255, 0.2)';
-                                    e.target.style.transform = 'scale(1)';
-                                }
+                                e.target.style.color = 'rgba(0, 0, 0, 0.45)';
                             }}
-                        >×</button>
+                        >
+                            <span className="ant-modal-close-x">
+                                <svg width="16" height="16" viewBox="0 0 1024 1024" fill="currentColor">
+                                    <path d="M799.86 166.31c.02 0 .04.02.08.06l57.69 57.7c.04.03.05.05.06.08a.12.12 0 010 .06c0 .03-.02.05-.06.09L569.93 512l287.7 287.7c.04.04.05.06.06.09a.12.12 0 010 .07c0 .02-.02.04-.06.08l-57.7 57.69c-.03.04-.05.05-.07.06a.12.12 0 01-.07 0c-.03 0-.05-.02-.09-.06L512 569.93l-287.7 287.7c-.04.04-.06.05-.09.06a.12.12 0 01-.07 0c-.02 0-.04-.02-.08-.06l-57.69-57.7c-.04-.03-.05-.05-.06-.07a.12.12 0 010-.07c0-.03.02-.05.06-.09L454.07 512l-287.7-287.7c-.04-.04-.05-.06-.06-.09a.12.12 0 010-.07c0-.02.02-.04.06-.08l57.7-57.69c.03-.04.05-.05.07-.06a.12.12 0 01.07 0c.03 0 .05.02.09.06L512 454.07l287.7-287.7c.04-.04.06-.05.09-.06a.12.12 0 01.07 0z"/>
+                                </svg>
+                            </span>
+                        </button>
                     </div>
                     
                     <form onSubmit={handleSubmit}>
@@ -277,24 +278,8 @@ const AddTransactionModal = ({
 
                         <div className="modal-footer assets-modal-footer">
                             <button 
-                                type="button" 
-                                className="btn btn-default me-2" 
-                                onClick={onClose}
-                                disabled={saving}
-                                style={{
-                                    borderRadius: '8px',
-                                    padding: '0.75rem 1.5rem',
-                                    border: '1px solid #e0e6ed',
-                                    background: 'white',
-                                    transition: 'all 0.2s ease'
-                                }}
-                            >
-                                <i className="fas fa-times me-2"></i>
-                                {lang === 'zh' ? '取消' : 'Cancel'}
-                            </button>
-                            <button 
                                 type="submit" 
-                                className="btn btn-primary"
+                                className="btn btn-primary w-100"
                                 disabled={saving}
                                 style={{
                                     borderRadius: '8px',

@@ -379,6 +379,15 @@ const HomePage = ({
                 onConfirm={confirmState.onConfirm}
                 onCancel={confirmState.onCancel}
             />
+            
+            {/* 悬浮的添加按钮 */}
+            <button 
+                className="floating-add-btn"
+                onClick={onShowAddTransaction}
+                title={t('addTransaction', '记一笔')}
+            >
+                <i className="fas fa-plus"></i>
+            </button>
         </div>
     );
 };

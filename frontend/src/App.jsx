@@ -775,37 +775,6 @@ const App = () => {
 
                     {/* 主内容区域 */}
                     <div className="main-content">
-                        {/* 顶部栏 */}
-                        <div className="top-bar">
-                            <div className="top-bar-left">
-                                <select className="account-selector">
-                                    <option>🧸 初始账本</option>
-                                </select>
-                            </div>
-                            <div className="top-bar-right">
-                                <button className="top-btn search-btn">
-                                    <i className="fas fa-search"></i>
-                                    <span>搜索</span>
-                                </button>
-                                <button className="top-btn reports-btn">
-                                    <i className="fas fa-chart-line"></i>
-                                </button>
-                                <button 
-                                    className="top-btn add-btn"
-                                    onClick={() => setShowAddTransactionModal(true)}
-                                >
-                                    <i className="fas fa-plus"></i>
-                                    记一笔
-                                </button>
-                                <button
-                                    className="top-btn lang-btn"
-                                    onClick={() => setLang(lang === 'en' ? 'zh' : 'en')}
-                                >
-                                    {lang === 'en' ? '中文' : 'English'}
-                                </button>
-                            </div>
-                        </div>
-
                         {/* 页面内容 */}
                         <Suspense fallback={
                             <div className="text-center mt-5">

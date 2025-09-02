@@ -99,7 +99,7 @@ const translations = {
         confirm_delete: "Are you sure you want to delete this transaction?",
         // Categories
         food: "Food", medical: "Medical", transport: "Transport", housing: "Housing", snacks: "Snacks",
-        learning: "Learning", communication: "Communication", social: "Social", investment: "Investment", shopping: "Shopping",
+        learning: "Learning", communication: "Communication", social: "Social", investment: "Investment", shopping: "Shopping", entertainment: "Entertainment",
         salary: "Salary", part_time: "Part-time", financial: "Financial", red_packet: "Red Packet", other: "Other",
     },
     zh: {
@@ -201,8 +201,8 @@ const translations = {
         delete: "删除",
         confirm_delete: "确定要删除这条记录吗？",
         // Categories
-        food: "早午晚餐", medical: "医疗", transport: "出行交通", housing: "住房", snacks: "零食烟酒",
-        learning: "学习", communication: "通讯", social: "社交", investment: "金融投资", shopping: "购物",
+        food: "三餐", medical: "医疗", transport: "交通", housing: "住房", snacks: "零食",
+        learning: "学习", communication: "通讯", social: "社交", investment: "投资", shopping: "购物", entertainment: "娱乐",
         salary: "工资", part_time: "兼职", financial: "理财", red_packet: "红包", other: "其他",
     }
 };
