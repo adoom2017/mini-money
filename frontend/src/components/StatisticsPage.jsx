@@ -1,4 +1,7 @@
 import React from 'react';
+import { Select } from 'antd';
+
+const { Option } = Select;
 
 const StatisticsPage = ({ lang, t, allCategories, categoryIconMap, fetchWithAuth }) => {
     const [stats, setStats] = React.useState(null);
@@ -127,87 +130,336 @@ const StatisticsPage = ({ lang, t, allCategories, categoryIconMap, fetchWithAuth
     const months = Array.from({ length: 12 }, (_, i) => i + 1);
 
     const renderContent = () => {
-        if (loading) return <div className="text-center p-5">{t('loading')}</div>;
-        if (error) return <div className="alert alert-danger">{t('error_fetching_stats')}</div>;
-        if (!stats || (stats.summary.totalIncome === 0 && stats.summary.totalExpense === 0)) {
-            return <div className="text-center p-5">{t('no_data_period')}</div>;
-        }
-
-        const breakdown = activeTab === 'expense' ? stats.expenseBreakdown : stats.incomeBreakdown;
-
-        return (
-            <>
-                <div className="row text-center my-4 stats-summary">
-                    <div className="col"><h6>{t('totalIncome')}</h6><p className="text-success fs-5 mb-0">{t('currencySymbol')}{stats.summary.totalIncome.toFixed(2)}</p></div>
-                    <div className="col"><h6>{t('totalExpense')}</h6><p className="text-danger fs-5 mb-0">{t('currencySymbol')}{stats.summary.totalExpense.toFixed(2)}</p></div>
-                    <div className="col"><h6>{t('balance')}</h6><p className="fs-5 mb-0">{t('currencySymbol')}{stats.summary.balance.toFixed(2)}</p></div>
-                </div>
-
-                <ul className="nav nav-tabs nav-fill mb-3">
-                    <li className="nav-item"><a className={`nav-link ${activeTab === 'expense' ? 'active' : ''}`} href="#" onClick={() => setActiveTab('expense')}>{t('expense')}</a></li>
-                    <li className="nav-item"><a className={`nav-link ${activeTab === 'income' ? 'active' : ''}`} href="#" onClick={() => setActiveTab('income')}>{t('income')}</a></li>
-                </ul>
-
-                {breakdown.length > 0 ? (
-                    <div className="row">
-                        <div className="col-md-7 breakdown-list">
-                            <ul className="list-group list-group-flush">
-                                {breakdown.map((item, index) => (
-                                    <li className="list-group-item" key={item.categoryKey}>
-                                        <div className="category-info">
-                                            <div
-                                                className="color-indicator"
-                                                style={{ backgroundColor: getCategoryColor(item.categoryKey, index) }}
-                                            ></div>
-                                            <span className="icon">{categoryIconMap.get(item.categoryKey) || '❓'}</span>
-                                            <span>{t(item.categoryKey)}</span>
-                                        </div>
-                                        <div className="d-flex align-items-center gap-3">
-                                            <span>{t('currencySymbol')}{item.amount.toFixed(2)}</span>
-                                            <div className="progress"><div className="progress-bar" role="progressbar" style={{width: `${item.percentage}%`}}></div></div>
-                                            <span>{item.percentage.toFixed(1)}%</span>
-                                        </div>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                        <div className="col-md-5 d-flex flex-column align-items-center justify-content-center">
-                            <div className="chart-container">
-                                <canvas ref={chartRef}></canvas>
+        if (loading) {
+            return (
+                <>
+                    {/* 统计摘要卡片 - 加载状态 */}
+                    <div className="total-assets-card" style={{ marginBottom: '2rem' }}>
+                        <div className="total-label">月度统计</div>
+                        <div className="text-center p-4">
+                            <div className="spinner-border text-primary" role="status">
+                                <span className="visually-hidden">Loading...</span>
                             </div>
-                            <div className="chart-legend mt-3">
-                                {breakdown.map((item, index) => (
-                                    <div key={item.categoryKey} className="legend-item">
-                                        <div
-                                            className="legend-color"
-                                            style={{ backgroundColor: getCategoryColor(item.categoryKey, index) }}
-                                        ></div>
-                                        <span className="legend-text">{t(item.categoryKey)}</span>
-                                    </div>
-                                ))}
+                            <p className="mt-3" style={{ color: '#6c757d', margin: '1rem 0 0 0' }}>{t('loading')}</p>
+                        </div>
+                    </div>
+
+                    {/* 分类统计卡片 - 加载状态 */}
+                    <div className="assets-list-card">
+                        <div className="assets-list-header">
+                            <h3 className="assets-list-title">
+                                <i className="fas fa-chart-pie me-2" style={{ color: '#667eea' }}></i>
+                                分类统计
+                            </h3>
+                        </div>
+                        <div className="assets-list-content">
+                            <div className="text-center p-5">
+                                <div className="spinner-border text-primary" role="status">
+                                    <span className="visually-hidden">Loading...</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                ) : (
-                    <div className="text-center p-5">{t('no_data_period')}</div>
-                )}
+                </>
+            );
+        }
+        
+        if (error) {
+            return (
+                <>
+                    {/* 统计摘要卡片 - 错误状态 */}
+                    <div className="total-assets-card" style={{ marginBottom: '2rem' }}>
+                        <div className="total-label">月度统计</div>
+                        <div className="text-center p-4">
+                            <div className="alert alert-danger" style={{
+                                borderRadius: '12px',
+                                margin: '0',
+                                border: 'none',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                            }}>
+                                <i className="fas fa-exclamation-triangle me-2"></i>
+                                {t('error_fetching_stats')}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 分类统计卡片 - 错误状态 */}
+                    <div className="assets-list-card">
+                        <div className="assets-list-header">
+                            <h3 className="assets-list-title">
+                                <i className="fas fa-chart-pie me-2" style={{ color: '#667eea' }}></i>
+                                分类统计
+                            </h3>
+                        </div>
+                        <div className="assets-list-content">
+                            <div className="text-center p-5">
+                                <i className="fas fa-exclamation-triangle" style={{ fontSize: '3rem', color: '#dc3545', marginBottom: '1rem' }}></i>
+                                <p style={{ color: '#6c757d', margin: 0 }}>{t('error_fetching_stats')}</p>
+                            </div>
+                        </div>
+                    </div>
+                </>
+            );
+        }
+        
+        // 无数据或有数据都使用相同的结构
+        const hasData = stats && (stats.summary.totalIncome !== 0 || stats.summary.totalExpense !== 0);
+        const breakdown = hasData ? (activeTab === 'expense' ? stats.expenseBreakdown : stats.incomeBreakdown) : [];
+
+        return (
+            <>
+                {/* 统计摘要卡片 - 始终保持相同结构 */}
+                <div className="total-assets-card" style={{ marginBottom: '2rem' }}>
+                    <div className="total-label">月度统计</div>
+                    {hasData ? (
+                        <div className="assets-summary">
+                            <div className="summary-item">
+                                <div className="summary-label">总收入</div>
+                                <div className="summary-amount" style={{ color: '#28a745' }}>
+                                    {t('currencySymbol')}{stats.summary.totalIncome.toFixed(2)}
+                                </div>
+                            </div>
+                            <div className="summary-item">
+                                <div className="summary-label">总支出</div>
+                                <div className="summary-amount" style={{ color: '#dc3545' }}>
+                                    {t('currencySymbol')}{stats.summary.totalExpense.toFixed(2)}
+                                </div>
+                            </div>
+                            <div className="summary-item">
+                                <div className="summary-label">净余额</div>
+                                <div className="summary-amount" style={{ 
+                                    color: stats.summary.balance >= 0 ? '#28a745' : '#dc3545' 
+                                }}>
+                                    {t('currencySymbol')}{stats.summary.balance.toFixed(2)}
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="text-center p-4">
+                            <i className="fas fa-chart-bar" style={{ fontSize: '3rem', color: '#e9ecef', marginBottom: '1rem' }}></i>
+                            <p style={{ color: '#6c757d', margin: 0 }}>{t('no_data_period')}</p>
+                        </div>
+                    )}
+                </div>
+
+                {/* 分类统计卡片 - 始终保持相同结构 */}
+                <div className="assets-list-card">
+                    <div className="assets-list-header">
+                        <h3 className="assets-list-title">
+                            <i className="fas fa-chart-pie me-2" style={{ color: '#667eea' }}></i>
+                            分类统计
+                        </h3>
+                        {hasData && (
+                            <div className="btn-group" role="group" style={{ borderRadius: '12px', overflow: 'hidden' }}>
+                                <button
+                                    type="button"
+                                    className={`btn ${activeTab === 'expense' ? 'btn-danger' : 'btn-outline-danger'}`}
+                                    onClick={() => setActiveTab('expense')}
+                                    style={{ fontSize: '14px', padding: '8px 16px' }}
+                                >
+                                    支出
+                                </button>
+                                <button
+                                    type="button"
+                                    className={`btn ${activeTab === 'income' ? 'btn-success' : 'btn-outline-success'}`}
+                                    onClick={() => setActiveTab('income')}
+                                    style={{ fontSize: '14px', padding: '8px 16px' }}
+                                >
+                                    收入
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="assets-list-content">
+                        {breakdown.length > 0 ? (
+                            <div className="row" style={{ padding: '0 1rem' }}>
+                                <div className="col-md-7">
+                                    <div className="breakdown-list">
+                                        {breakdown.map((item, index) => (
+                                            <div className="asset-item" key={item.categoryKey} style={{
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                alignItems: 'center',
+                                                padding: '1rem',
+                                                marginBottom: '0.5rem',
+                                                borderRadius: '12px',
+                                                background: 'white',
+                                                border: '1px solid #f0f0f0',
+                                                boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                                            }}>
+                                                <div className="category-info" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                    <div
+                                                        className="color-indicator"
+                                                        style={{ 
+                                                            backgroundColor: getCategoryColor(item.categoryKey, index),
+                                                            width: '12px',
+                                                            height: '12px',
+                                                            borderRadius: '50%'
+                                                        }}
+                                                    ></div>
+                                                    <span className="icon" style={{ fontSize: '1.2rem' }}>{categoryIconMap.get(item.categoryKey) || '❓'}</span>
+                                                    <span style={{ fontWeight: '500', color: '#2c3e50' }}>{t(item.categoryKey)}</span>
+                                                </div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                                                    <span style={{ fontWeight: '600', color: '#667eea' }}>
+                                                        {t('currencySymbol')}{item.amount.toFixed(2)}
+                                                    </span>
+                                                    <div className="progress" style={{ width: '80px', height: '6px', borderRadius: '3px', backgroundColor: '#f8f9fa' }}>
+                                                        <div 
+                                                            className="progress-bar" 
+                                                            role="progressbar" 
+                                                            style={{
+                                                                width: `${item.percentage}%`,
+                                                                backgroundColor: getCategoryColor(item.categoryKey, index),
+                                                                borderRadius: '3px'
+                                                            }}
+                                                        ></div>
+                                                    </div>
+                                                    <span style={{ fontSize: '14px', color: '#6c757d', minWidth: '45px' }}>
+                                                        {item.percentage.toFixed(1)}%
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="col-md-5 d-flex flex-column align-items-center justify-content-center">
+                                    <div className="chart-container" style={{
+                                        width: '280px',
+                                        height: '280px',
+                                        position: 'relative',
+                                        background: 'white',
+                                        borderRadius: '16px',
+                                        padding: '20px',
+                                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                                    }}>
+                                        <canvas ref={chartRef}></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="row" style={{ padding: '0 1rem' }}>
+                                <div className="col-md-7">
+                                    <div className="text-center p-5" style={{
+                                        background: 'white',
+                                        borderRadius: '12px',
+                                        boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                                        minHeight: '200px',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        justifyContent: 'center',
+                                        alignItems: 'center'
+                                    }}>
+                                        <i className="fas fa-chart-pie" style={{ fontSize: '3rem', color: '#e9ecef', marginBottom: '1rem' }}></i>
+                                        <p style={{ color: '#6c757d', margin: 0 }}>{t('no_data_period')}</p>
+                                    </div>
+                                </div>
+                                <div className="col-md-5 d-flex flex-column align-items-center justify-content-center">
+                                    <div className="chart-container" style={{
+                                        width: '280px',
+                                        height: '280px',
+                                        position: 'relative',
+                                        background: '#f8f9fa',
+                                        borderRadius: '16px',
+                                        padding: '20px',
+                                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        justifyContent: 'center',
+                                        alignItems: 'center'
+                                    }}>
+                                        <i className="fas fa-chart-pie" style={{ fontSize: '4rem', color: '#e9ecef', marginBottom: '1rem' }}></i>
+                                        <p style={{ color: '#6c757d', margin: 0, fontSize: '14px', textAlign: 'center' }}>暂无图表数据</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
             </>
         );
     };
 
     return (
-        <div className="stats-card shadow-sm p-4">
-            <div className="d-flex justify-content-between align-items-center">
-                <h4>{t('statistics_title')}</h4>
-                <div className="stats-filter">
-                    <select className="form-select" value={year} onChange={e => setYear(e.target.value)} disabled={loading}>
-                        {years.map(y => <option key={y} value={y}>{y}</option>)}
-                    </select>
-                    <select className="form-select" value={month} onChange={e => setMonth(e.target.value)} disabled={loading}>
-                        {months.map(m => <option key={m} value={m}>{m}</option>)}
-                    </select>
+        <div className="assets-page-mobile">
+            {/* 页面头部 */}
+            <div className="page-header">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                    <h2 className="page-title">统计分析</h2>
+                    <div className="stats-filter" style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        background: 'rgba(255, 255, 255, 0.95)',
+                        padding: '12px 20px',
+                        borderRadius: '16px',
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)'
+                    }}>
+                        <div style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '8px',
+                            color: '#667eea',
+                            fontWeight: '600',
+                            fontSize: '14px'
+                        }}>
+                            <i className="fas fa-calendar-alt"></i>
+                            筛选
+                        </div>
+                        <Select
+                            value={year}
+                            onChange={setYear}
+                            disabled={loading}
+                            style={{ 
+                                width: 120,
+                                fontSize: '14px'
+                            }}
+                            size="middle"
+                            placeholder="选择年份"
+                            dropdownStyle={{
+                                borderRadius: '12px',
+                                boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                                border: 'none'
+                            }}
+                            className="stats-year-selector-visible"
+                        >
+                            {years.map(y => (
+                                <Option key={y} value={y}>
+                                    <span style={{ fontWeight: '500', color: '#333' }}>{y}年</span>
+                                </Option>
+                            ))}
+                        </Select>
+                        
+                        <Select
+                            value={month}
+                            onChange={setMonth}
+                            disabled={loading}
+                            style={{ 
+                                width: 100,
+                                fontSize: '14px'
+                            }}
+                            size="middle"
+                            placeholder="选择月份"
+                            dropdownStyle={{
+                                borderRadius: '12px',
+                                boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                                border: 'none'
+                            }}
+                            className="stats-month-selector-visible"
+                        >
+                            {months.map(m => (
+                                <Option key={m} value={m}>
+                                    <span style={{ fontWeight: '500', color: '#333' }}>{m}月</span>
+                                </Option>
+                            ))}
+                        </Select>
+                    </div>
                 </div>
             </div>
+
             {renderContent()}
         </div>
     );

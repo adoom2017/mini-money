@@ -6453,6 +6453,157 @@ textarea.form-control {
     font-weight: bold !important;
 }
 
+/* 统计页面选择器样式 */
+.stats-year-selector .ant-select-selector,
+.stats-month-selector .ant-select-selector {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: 8px !important;
+    color: white !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+    transition: all 0.2s ease !important;
+    height: 36px !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+.stats-year-selector .ant-select-selector:hover,
+.stats-month-selector .ant-select-selector:hover {
+    background: rgba(255, 255, 255, 0.25) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+.stats-year-selector.ant-select-focused .ant-select-selector,
+.stats-month-selector.ant-select-focused .ant-select-selector {
+    background: rgba(255, 255, 255, 0.3) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2) !important;
+}
+
+.stats-year-selector .ant-select-selection-item,
+.stats-month-selector .ant-select-selection-item {
+    color: white !important;
+    font-weight: 500 !important;
+    line-height: 34px !important;
+}
+
+.stats-year-selector .ant-select-arrow,
+.stats-month-selector .ant-select-arrow {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* 新的可见选择器样式 - 白色背景，更清晰 */
+.stats-year-selector-visible .ant-select-selector,
+.stats-month-selector-visible .ant-select-selector {
+    background: white !important;
+    border: 2px solid #e1e5e9 !important;
+    border-radius: 12px !important;
+    color: #333 !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    transition: all 0.2s ease !important;
+    height: 40px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+.stats-year-selector-visible .ant-select-selector:hover,
+.stats-month-selector-visible .ant-select-selector:hover {
+    background: white !important;
+    border-color: #667eea !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2) !important;
+}
+
+.stats-year-selector-visible.ant-select-focused .ant-select-selector,
+.stats-month-selector-visible.ant-select-focused .ant-select-selector {
+    background: white !important;
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15) !important;
+}
+
+.stats-year-selector-visible .ant-select-selection-item,
+.stats-month-selector-visible .ant-select-selection-item {
+    color: #333 !important;
+    font-weight: 600 !important;
+    line-height: 36px !important;
+    font-size: 14px !important;
+}
+
+.stats-year-selector-visible .ant-select-arrow,
+.stats-month-selector-visible .ant-select-arrow {
+    color: #667eea !important;
+    font-size: 12px !important;
+}
+
+/* 统计页面选择器下拉菜单样式 */
+.stats-year-selector .ant-select-dropdown,
+.stats-month-selector .ant-select-dropdown,
+.stats-year-selector-visible .ant-select-dropdown,
+.stats-month-selector-visible .ant-select-dropdown {
+    background: white !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+    border: none !important;
+    overflow: hidden !important;
+}
+
+.stats-year-selector .ant-select-item,
+.stats-month-selector .ant-select-item,
+.stats-year-selector-visible .ant-select-item,
+.stats-month-selector-visible .ant-select-item {
+    padding: 10px 16px !important;
+    color: #333 !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease !important;
+    font-size: 14px !important;
+}
+
+.stats-year-selector .ant-select-item:hover,
+.stats-month-selector .ant-select-item:hover,
+.stats-year-selector-visible .ant-select-item:hover,
+.stats-month-selector-visible .ant-select-item:hover {
+    background: linear-gradient(135deg, #f0f4ff 0%, #e6f0ff 100%) !important;
+    color: #667eea !important;
+}
+
+.stats-year-selector .ant-select-item-option-selected,
+.stats-month-selector .ant-select-item-option-selected,
+.stats-year-selector-visible .ant-select-item-option-selected,
+.stats-month-selector-visible .ant-select-item-option-selected {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+    font-weight: 600 !important;
+}
+
+.stats-year-selector .ant-select-item-option-selected:hover,
+.stats-month-selector .ant-select-item-option-selected:hover,
+.stats-year-selector-visible .ant-select-item-option-selected:hover,
+.stats-month-selector-visible .ant-select-item-option-selected:hover {
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%) !important;
+    color: white !important;
+}
+
+/* 禁用状态样式 */
+.stats-year-selector.ant-select-disabled .ant-select-selector,
+.stats-month-selector.ant-select-disabled .ant-select-selector,
+.stats-year-selector-visible.ant-select-disabled .ant-select-selector,
+.stats-month-selector-visible.ant-select-disabled .ant-select-selector {
+    background: #f5f5f5 !important;
+    border-color: #d9d9d9 !important;
+    color: #00000040 !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+}
+
+.stats-year-selector.ant-select-disabled .ant-select-arrow,
+.stats-month-selector.ant-select-disabled .ant-select-arrow,
+.stats-year-selector-visible.ant-select-disabled .ant-select-arrow,
+.stats-month-selector-visible.ant-select-disabled .ant-select-arrow {
+    color: #00000040 !important;
+}
+
 /* 为Bootstrap模态框中的ant-modal-close样式添加支持 */
 .modal .ant-modal-close {
     position: absolute !important;

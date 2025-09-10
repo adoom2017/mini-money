@@ -721,7 +721,7 @@ const App = () => {
                                 onClick={(e) => { e.preventDefault(); setPage('statistics'); }}
                             >
                                 <i className="fas fa-chart-bar"></i>
-                                <span>预算</span>
+                                <span>统计</span>
                             </a>
                             <a 
                                 href="#" 
