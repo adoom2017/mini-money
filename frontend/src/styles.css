@@ -4700,12 +4700,20 @@ html {
 
 /* Mobile-First Assets Page Design */
 .assets-page-mobile {
-    max-width: 1200px; /* 限制最大宽度 */
-    margin: 0 auto; /* 居中显示 */
-    padding: 1rem;
+    max-width: none;
+    margin: 0;
+    padding: 0;
     background: #f5f6fa;
-    min-height: calc(100vh - 60px); /* 减去顶部导航栏高度 */
-    overflow-y: auto;
+    min-height: 100vh;
+}
+
+/* 新增：资产页内部内容固定宽度容器 */
+.assets-inner-content {
+    width: 848px;
+    max-width: 100%;
+    margin: 1rem auto;
+    padding: 0 20px;
+    box-sizing: border-box;
 }
 
 /* Page Header */
@@ -4774,7 +4782,7 @@ html {
 .total-assets-card {
     background: linear-gradient(135deg, #667eea, #764ba2);
     border-radius: 16px;
-    padding: 0.75rem;
+    padding: 0rem;
     margin-bottom: 1.5rem;
     color: white;
     text-align: center;
@@ -5215,27 +5223,27 @@ html {
 /* 自定义滚动条样式 */
 .main-content::-webkit-scrollbar,
 .assets-categories::-webkit-scrollbar,
-.assets-page-mobile::-webkit-scrollbar {
+.assets-inner-content::-webkit-scrollbar {
     width: 6px;
 }
 
 .main-content::-webkit-scrollbar-track,
 .assets-categories::-webkit-scrollbar-track,
-.assets-page-mobile::-webkit-scrollbar-track {
+.assets-inner-content::-webkit-scrollbar-track {
     background: #f1f1f1;
     border-radius: 10px;
 }
 
 .main-content::-webkit-scrollbar-thumb,
 .assets-categories::-webkit-scrollbar-thumb,
-.assets-page-mobile::-webkit-scrollbar-thumb {
+.assets-inner-content::-webkit-scrollbar-thumb {
     background: #c1c1c1;
     border-radius: 10px;
 }
 
 .main-content::-webkit-scrollbar-thumb:hover,
 .assets-categories::-webkit-scrollbar-thumb:hover,
-.assets-page-mobile::-webkit-scrollbar-thumb:hover {
+.assets-inner-content::-webkit-scrollbar-thumb:hover {
     background: #a8a8a8;
 }
 
@@ -5300,7 +5308,7 @@ html {
 @media (min-width: 1200px) {
     .assets-page-mobile {
         max-width: 1200px;
-        padding: 2.5rem 3rem;
+        padding: 1rem 1rem;
     }
     
     .new-homepage-layout {

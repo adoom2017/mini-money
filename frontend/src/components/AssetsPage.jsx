@@ -437,7 +437,7 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
     }
 
     return (
-        <div className="assets-page-mobile">
+        <div className="assets-inner-content">
             {/* 页面头部 */}
             <div className="page-header">
                 <h2 className="page-title">资产管理</h2>

@@ -3,7 +3,6 @@ import Toast from './components/Toast.jsx';
 
 // 使用懒加载优化页面组件
 const AuthPage = lazy(() => import('./components/AuthPage.jsx'));
-const RecordsPage = lazy(() => import('./components/RecordsPage.jsx'));
 const StatisticsPage = lazy(() => import('./components/StatisticsPage.jsx'));
 const AssetsPage = lazy(() => import('./components/AssetsPage.jsx'));
 const HomePage = lazy(() => import('./components/HomePage.jsx'));
@@ -725,38 +724,6 @@ const App = () => {
                             </a>
                             <a 
                                 href="#" 
-                                className={`nav-item ${page === 'records' ? 'active' : ''}`}
-                                onClick={(e) => { e.preventDefault(); setPage('records'); }}
-                            >
-                                <i className="fas fa-credit-card"></i>
-                                <span>卡片</span>
-                            </a>
-                            <a 
-                                href="#" 
-                                className="nav-item"
-                                onClick={(e) => { e.preventDefault(); /* 周期功能 */ }}
-                            >
-                                <i className="fas fa-calendar-alt"></i>
-                                <span>周期</span>
-                            </a>
-                            <a 
-                                href="#" 
-                                className="nav-item"
-                                onClick={(e) => { e.preventDefault(); /* 存钱功能 */ }}
-                            >
-                                <i className="fas fa-piggy-bank"></i>
-                                <span>存钱</span>
-                            </a>
-                            <a 
-                                href="#" 
-                                className="nav-item"
-                                onClick={(e) => { e.preventDefault(); /* 反馈功能 */ }}
-                            >
-                                <i className="fas fa-comment-alt"></i>
-                                <span>反馈</span>
-                            </a>
-                            <a 
-                                href="#" 
                                 className={`nav-item ${page === 'settings' ? 'active' : ''}`}
                                 onClick={(e) => { 
                                     e.preventDefault(); 
@@ -790,9 +757,6 @@ const App = () => {
                                     onShowAddTransaction={() => setShowAddTransactionModal(true)}
                                     refreshTrigger={refreshTrigger}
                                 />
-                            )}
-                            {page === 'records' && (
-                                <RecordsPage {...commonProps} />
                             )}
                             {page === 'statistics' && (
                                 <StatisticsPage {...commonProps} />
@@ -905,16 +869,6 @@ const App = () => {
                             >
                                 <i className="fas fa-home me-2"></i>
                                 {lang === 'zh' ? '首页' : 'Home'}
-                            </a>
-                        </li>
-                        <li className="nav-item">
-                            <a
-                                className={`nav-link ${page === 'records' ? 'active' : ''}`}
-                                href="#"
-                                onClick={(e) => { e.preventDefault(); setPage('records'); }}
-                            >
-                                <i className="fas fa-list me-2"></i>
-                                {t('records')}
                             </a>
                         </li>
                         <li className="nav-item">

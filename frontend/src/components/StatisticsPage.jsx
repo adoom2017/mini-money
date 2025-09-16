@@ -382,7 +382,7 @@ const StatisticsPage = ({ lang, t, allCategories, categoryIconMap, fetchWithAuth
     };
 
     return (
-        <div className="assets-page-mobile">
+        <div className="assets-inner-content">
             {/* 页面头部 */}
             <div className="page-header">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
