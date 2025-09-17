@@ -6901,3 +6901,33 @@ textarea.form-control {
         font-size: 15px;
     }
 }
+
+/* 自定义确认弹窗动画 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes modalShow {
+    from {
+        opacity: 0;
+        transform: scale(0.8) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* 自定义确认弹窗样式 */
+.custom-confirm-overlay {
+    animation: fadeIn 0.3s ease;
+}
+
+.custom-confirm-modal {
+    animation: modalShow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}

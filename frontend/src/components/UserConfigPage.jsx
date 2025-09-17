@@ -37,6 +37,7 @@ const UserConfigPage = ({ user, onClose, onUpdatePassword, onUpdateEmail, onUpda
         password: ''
     });
     const [isLoading, setIsLoading] = useState(false);
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
     const handlePasswordSubmit = async (e) => {
         e.preventDefault();
@@ -457,10 +458,7 @@ const UserConfigPage = ({ user, onClose, onUpdatePassword, onUpdateEmail, onUpda
                     <button
                         className="btn"
                         onClick={() => {
-                            if (confirm(translate('confirm_logout') || '确定要登出吗？')) {
-                                onLogout();
-                                onClose();
-                            }
+                            setShowLogoutConfirm(true);
                         }}
                         style={{
                             background: 'linear-gradient(135deg, #ff6b6b, #ee5a52)',
@@ -495,6 +493,139 @@ const UserConfigPage = ({ user, onClose, onUpdatePassword, onUpdateEmail, onUpda
                 </div>
             </div>
             </div>
+            
+            {/* 自定义确认弹窗 */}
+            {showLogoutConfirm && (
+                <div className="custom-confirm-overlay" style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 10000,
+                    backdropFilter: 'blur(5px)',
+                    animation: 'fadeIn 0.3s ease'
+                }}>
+                    <div className="custom-confirm-modal" style={{
+                        background: 'rgba(255, 255, 255, 0.95)',
+                        borderRadius: '20px',
+                        padding: '2rem',
+                        maxWidth: '400px',
+                        width: '90%',
+                        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3), 0 8px 20px rgba(0, 0, 0, 0.15)',
+                        backdropFilter: 'blur(20px)',
+                        border: '1px solid rgba(255, 255, 255, 0.8)',
+                        transform: 'scale(0.9)',
+                        animation: 'modalShow 0.3s ease forwards'
+                    }}>
+                        <div className="confirm-header" style={{
+                            textAlign: 'center',
+                            marginBottom: '1.5rem'
+                        }}>
+                            <div style={{
+                                width: '64px',
+                                height: '64px',
+                                borderRadius: '50%',
+                                background: 'linear-gradient(135deg, #ff6b6b, #ee5a52)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                margin: '0 auto 1rem',
+                                boxShadow: '0 8px 25px rgba(255, 107, 107, 0.3)'
+                            }}>
+                                <i className="fas fa-sign-out-alt" style={{
+                                    fontSize: '24px',
+                                    color: 'white'
+                                }}></i>
+                            </div>
+                            <h3 style={{
+                                margin: 0,
+                                color: '#333',
+                                fontSize: '1.5rem',
+                                fontWeight: '600'
+                            }}>
+                                {translate('confirm_logout') || '确认退出登录'}
+                            </h3>
+                        </div>
+                        
+                        <div className="confirm-content" style={{
+                            textAlign: 'center',
+                            marginBottom: '2rem',
+                            color: '#666',
+                            fontSize: '1rem',
+                            lineHeight: '1.5'
+                        }}>
+                            您确定要退出当前账户吗？退出后需要重新登录才能使用。
+                        </div>
+                        
+                        <div className="confirm-buttons" style={{
+                            display: 'flex',
+                            gap: '12px',
+                            justifyContent: 'center'
+                        }}>
+                            <button
+                                onClick={() => setShowLogoutConfirm(false)}
+                                style={{
+                                    background: 'rgba(108, 117, 125, 0.1)',
+                                    border: '1px solid rgba(108, 117, 125, 0.3)',
+                                    borderRadius: '12px',
+                                    padding: '0.75rem 1.5rem',
+                                    color: '#6c757d',
+                                    fontWeight: '500',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.3s ease',
+                                    fontSize: '0.9rem'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.target.style.background = 'rgba(108, 117, 125, 0.15)';
+                                    e.target.style.transform = 'translateY(-1px)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.target.style.background = 'rgba(108, 117, 125, 0.1)';
+                                    e.target.style.transform = 'translateY(0)';
+                                }}
+                            >
+                                取消
+                            </button>
+                            <button
+                                onClick={() => {
+                                    onLogout();
+                                    onClose();
+                                    setShowLogoutConfirm(false);
+                                }}
+                                style={{
+                                    background: 'linear-gradient(135deg, #ff6b6b, #ee5a52)',
+                                    border: 'none',
+                                    borderRadius: '12px',
+                                    padding: '0.75rem 1.5rem',
+                                    color: 'white',
+                                    fontWeight: '600',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.3s ease',
+                                    boxShadow: '0 4px 15px rgba(255, 107, 107, 0.3)',
+                                    fontSize: '0.9rem'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.target.style.background = 'linear-gradient(135deg, #ff5252, #e53935)';
+                                    e.target.style.transform = 'translateY(-2px)';
+                                    e.target.style.boxShadow = '0 6px 20px rgba(255, 107, 107, 0.4)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.target.style.background = 'linear-gradient(135deg, #ff6b6b, #ee5a52)';
+                                    e.target.style.transform = 'translateY(0)';
+                                    e.target.style.boxShadow = '0 4px 15px rgba(255, 107, 107, 0.3)';
+                                }}
+                            >
+                                确认退出
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
