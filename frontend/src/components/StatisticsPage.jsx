@@ -13,11 +13,12 @@ const StatisticsPage = ({ lang, t, allCategories, categoryIconMap, fetchWithAuth
     const chartRef = React.useRef(null);
     const chartInstance = React.useRef(null);
 
-    // 定义固定的颜色数组，确保每个分类都有对应的颜色
+    // 定义美观的渐变色彩数组，确保每个分类都有对应的颜色
     const chartColors = [
-        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
-        '#FF9F40', '#C9CBCF', '#E7E9ED', '#7FDBFF', '#F012BE',
-        '#FF851B', '#2ECC40', '#FFDC00', '#001F3F', '#85144B'
+        '#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe',
+        '#43e97b', '#38ef7d', '#ebbba7', '#cfc7f8', '#ffecd2',
+        '#a8edea', '#fed6e3', '#d299c2', '#fef9d7', '#89f7fe',
+        '#66a6ff', '#89cff0', '#a7c6ed', '#b6a1b4', '#87ceeb'
     ];
 
     // 获取分类对应的颜色
@@ -84,7 +85,15 @@ const StatisticsPage = ({ lang, t, allCategories, categoryIconMap, fetchWithAuth
                     datasets: [{
                         data: breakdown.map(d => d.amount),
                         backgroundColor: breakdown.map((d, index) => getCategoryColor(d.categoryKey, index)),
-                        borderWidth: 1,
+                        borderColor: '#ffffff',
+                        borderWidth: 2,
+                        hoverBackgroundColor: breakdown.map((d, index) => {
+                            // 创建悬停时的加亮效果
+                            const color = getCategoryColor(d.categoryKey, index);
+                            return color + 'DD'; // 添加透明度
+                        }),
+                        hoverBorderColor: '#ffffff',
+                        hoverBorderWidth: 3
                     }]
                 };
 
@@ -95,10 +104,38 @@ const StatisticsPage = ({ lang, t, allCategories, categoryIconMap, fetchWithAuth
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
-                            plugins: { legend: { display: false } },
+                            cutout: '65%', // 增加环形图的内径
+                            plugins: { 
+                                legend: { display: false },
+                                tooltip: {
+                                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                    titleColor: '#2c3e50',
+                                    bodyColor: '#2c3e50',
+                                    borderColor: '#e9ecef',
+                                    borderWidth: 1,
+                                    cornerRadius: 8,
+                                    displayColors: true,
+                                    callbacks: {
+                                        label: function(context) {
+                                            const label = context.label || '';
+                                            const value = context.parsed;
+                                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                            const percentage = ((value / total) * 100).toFixed(1);
+                                            return `${label}: ¥${value.toFixed(2)} (${percentage}%)`;
+                                        }
+                                    }
+                                }
+                            },
                             animation: {
                                 animateRotate: true,
-                                animateScale: false
+                                animateScale: true,
+                                duration: 1000,
+                                easing: 'easeInOutCubic'
+                            },
+                            elements: {
+                                arc: {
+                                    borderRadius: 4 // 圆角效果
+                                }
                             }
                         }
                     });
@@ -329,12 +366,38 @@ const StatisticsPage = ({ lang, t, allCategories, categoryIconMap, fetchWithAuth
                                         width: '280px',
                                         height: '280px',
                                         position: 'relative',
-                                        background: 'white',
+                                        background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
                                         borderRadius: '16px',
                                         padding: '20px',
-                                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                                        boxShadow: '0 8px 24px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.08)',
+                                        border: '1px solid rgba(255,255,255,0.8)'
                                     }}>
                                         <canvas ref={chartRef}></canvas>
+                                        {/* 图表中心文字 */}
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '50%',
+                                            left: '50%',
+                                            transform: 'translate(-50%, -50%)',
+                                            textAlign: 'center',
+                                            pointerEvents: 'none'
+                                        }}>
+                                            <div style={{
+                                                fontSize: '16px',
+                                                fontWeight: '600',
+                                                color: activeTab === 'expense' ? '#dc3545' : '#28a745',
+                                                marginBottom: '4px'
+                                            }}>
+                                                {activeTab === 'expense' ? '总支出' : '总收入'}
+                                            </div>
+                                            <div style={{
+                                                fontSize: '18px',
+                                                fontWeight: '700',
+                                                color: '#2c3e50'
+                                            }}>
+                                                ¥{(activeTab === 'expense' ? stats.summary.totalExpense : stats.summary.totalIncome).toFixed(2)}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

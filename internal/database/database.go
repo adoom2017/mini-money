@@ -242,7 +242,7 @@ func GetAllTransactions(userID int64) ([]models.Transaction, error) {
 }
 
 // GetFilteredTransactions retrieves filtered transactions from database for a specific user
-func GetFilteredTransactions(userID int64, transactionType, month, search, limit, date string) ([]models.Transaction, error) {
+func GetFilteredTransactions(userID int64, transactionType, month, search, limit, date, startDate, endDate string) ([]models.Transaction, error) {
 	query := "SELECT id, user_id, description, amount, type, category_key, date FROM transactions WHERE user_id = ?"
 	args := []interface{}{userID}
 
@@ -252,13 +252,21 @@ func GetFilteredTransactions(userID int64, transactionType, month, search, limit
 		args = append(args, transactionType)
 	}
 
-	// Add date filter (specific date has priority over month)
+	// Add date filter (priority: specific date > date range > month)
 	if date != "" {
 		// date format is "YYYY-MM-DD"
 		// SQLite stores Go time.Time as full timestamp like "2025-07-21 13:07:14.189539231 +0000 UTC"
 		// Use LIKE to match the date portion at the beginning
 		query += " AND date LIKE ?"
 		args = append(args, date+" %")
+	} else if startDate != "" && endDate != "" {
+		// date range filter for multi-month queries like "最近三个月"
+		// startDate and endDate format is "YYYY-MM-DD"
+		query += " AND date >= ? AND date <= ?"
+		// Convert dates to proper format for comparison
+		startDateStr := startDate + " 00:00:00"
+		endDateStr := endDate + " 23:59:59"
+		args = append(args, startDateStr, endDateStr)
 	} else if month != "" && month != "all" {
 		// month format is "YYYY-MM"
 		// Use LIKE to match the beginning of the date string since Go stores dates as full timestamp

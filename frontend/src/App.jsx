@@ -8,6 +8,7 @@ const AssetsPage = lazy(() => import('./components/AssetsPage.jsx'));
 const HomePage = lazy(() => import('./components/HomePage.jsx'));
 const AddTransactionModal = lazy(() => import('./components/AddTransactionModal.jsx'));
 const UserConfigPage = lazy(() => import('./components/UserConfigPage.jsx'));
+const DetailsPage = lazy(() => import('./components/DetailsPage.jsx'));
 
 // User Settings Modal Component
 const UserSettingsModal = ({ user, onClose, onUpdatePassword, onUpdateEmail, t }) => {
@@ -708,6 +709,14 @@ const App = () => {
                             </a>
                             <a 
                                 href="#" 
+                                className={`nav-item ${page === 'details' ? 'active' : ''}`}
+                                onClick={(e) => { e.preventDefault(); setPage('details'); }}
+                            >
+                                <i className="fas fa-list-ul"></i>
+                                <span>详情</span>
+                            </a>
+                            <a 
+                                href="#" 
                                 className={`nav-item ${page === 'assets' ? 'active' : ''}`}
                                 onClick={(e) => { e.preventDefault(); setPage('assets'); }}
                             >
@@ -756,6 +765,12 @@ const App = () => {
                                     {...commonProps} 
                                     onShowAddTransaction={() => setShowAddTransactionModal(true)}
                                     refreshTrigger={refreshTrigger}
+                                />
+                            )}
+                            {page === 'details' && (
+                                <DetailsPage 
+                                    {...commonProps} 
+                                    onShowAddTransaction={() => setShowAddTransactionModal(true)}
                                 />
                             )}
                             {page === 'statistics' && (
@@ -869,6 +884,16 @@ const App = () => {
                             >
                                 <i className="fas fa-home me-2"></i>
                                 {lang === 'zh' ? '首页' : 'Home'}
+                            </a>
+                        </li>
+                        <li className="nav-item">
+                            <a
+                                className={`nav-link ${page === 'details' ? 'active' : ''}`}
+                                href="#"
+                                onClick={(e) => { e.preventDefault(); setPage('details'); }}
+                            >
+                                <i className="fas fa-list-ul me-2"></i>
+                                {lang === 'zh' ? '详情' : 'Details'}
                             </a>
                         </li>
                         <li className="nav-item">

@@ -39,15 +39,18 @@ const AssetTrendChart = ({ records, assetName, color }) => {
                     label: assetName,
                     data: data,
                     borderColor: color,
-                    backgroundColor: color + '20',
-                    borderWidth: 2,
-                    fill: true,
+                    backgroundColor: 'transparent', // 透明背景，不填充区域
+                    borderWidth: 3, // 增加线条宽度使其更清晰
+                    fill: false, // 不填充区域，只显示折线
                     tension: 0.3,
                     pointBackgroundColor: color,
                     pointBorderColor: '#fff',
                     pointBorderWidth: 2,
-                    pointRadius: 4,
-                    pointHoverRadius: 6
+                    pointRadius: 5, // 增加点的大小
+                    pointHoverRadius: 7, // 增加悬停时点的大小
+                    pointHoverBackgroundColor: color,
+                    pointHoverBorderColor: '#fff',
+                    pointHoverBorderWidth: 3
                 }]
             },
             options: {

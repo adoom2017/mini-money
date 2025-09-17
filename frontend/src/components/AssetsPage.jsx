@@ -362,13 +362,34 @@ const AssetsPage = ({ lang, t, fetchWithAuth, showToast }) => {
     };
 
     // Get total assets value (excluding liabilities)
+    // 鲜艳的颜色配色方案
+    const vibrantColors = [
+        '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', 
+        '#FF9FF3', '#54A0FF', '#5F27CD', '#00D2D3', '#FF9F43',
+        '#EE5A24', '#009432', '#0652DD', '#9980FA', '#FFC312',
+        '#C44569', '#F8B500', '#6C5CE7', '#A29BFE', '#FD79A8'
+    ];
+
     // Get category info by ID
     const getCategoryInfo = (categoryId) => {
         if (!assetCategories || !Array.isArray(assetCategories)) {
-            return { name: '未分类', icon: '❓', type: 'asset' };
+            return { name: '未分类', icon: '❓', type: 'asset', color: vibrantColors[0] };
         }
-        return assetCategories.find(cat => cat.id === categoryId) || 
-               { name: '未分类', icon: '❓', type: 'asset' };
+        const category = assetCategories.find(cat => cat.id === categoryId);
+        if (!category) {
+            return { name: '未分类', icon: '❓', type: 'asset', color: vibrantColors[0] };
+        }
+        
+        // 为每个分类分配鲜艳颜色（根据分类ID的哈希值）
+        const colorIndex = Math.abs(categoryId.toString().split('').reduce((a, b) => {
+            a = ((a << 5) - a) + b.charCodeAt(0);
+            return a & a;
+        }, 0)) % vibrantColors.length;
+        
+        return {
+            ...category,
+            color: vibrantColors[colorIndex] // 覆盖后端返回的颜色，使用更鲜艳的配色
+        };
     };
 
     // Get total assets value (only asset type categories)

@@ -81,8 +81,10 @@ func GetTransactions(c *gin.Context) {
 	search := c.Query("search")
 	limit := c.Query("limit")
 	date := c.Query("date")
+	startDate := c.Query("start_date")
+	endDate := c.Query("end_date")
 
-	transactions, err := database.GetFilteredTransactions(userID, transactionType, month, search, limit, date)
+	transactions, err := database.GetFilteredTransactions(userID, transactionType, month, search, limit, date, startDate, endDate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
