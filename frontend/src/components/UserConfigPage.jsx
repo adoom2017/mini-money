@@ -7,12 +7,14 @@ const UserConfigPage = ({ user, onClose, onUpdatePassword, onUpdateEmail, onUpda
     if (!user) {
         console.log('User is null, showing loading...');
         return (
-            <div className="user-settings-page">
-                <div className="page-header">
-                    <h2 className="page-title">加载中...</h2>
-                </div>
-                <div className="settings-content">
-                    <p>用户信息加载中...</p>
+            <div className="assets-inner-content">
+                <div className="user-settings-page">
+                    <div className="page-header d-flex justify-content-between align-items-center mb-4">
+                        <h2>加载中...</h2>
+                    </div>
+                    <div className="settings-content">
+                        <p>用户信息加载中...</p>
+                    </div>
                 </div>
             </div>
         );
@@ -95,15 +97,16 @@ const UserConfigPage = ({ user, onClose, onUpdatePassword, onUpdateEmail, onUpda
     };
 
     return (
-        <div className="user-settings-page">
-            <div className="page-header">
-                <h2 className="page-title">
-                    <i className="fas fa-cog me-2"></i>
-                    {translate('user_settings') || '用户设置'}
-                </h2>
-            </div>
-            
-            <div className="settings-content">
+        <div className="assets-inner-content">
+            <div className="user-settings-page">
+                <div className="page-header d-flex justify-content-between align-items-center mb-4">
+                    <h2>
+                        <i className="fas fa-cog me-2"></i>
+                        {translate('user_settings') || '用户设置'}
+                    </h2>
+                </div>
+                
+                <div className="settings-content">
                 {/* 标签页导航 */}
                 <ul className="nav nav-tabs mb-4">
                     <li className="nav-item">
@@ -149,8 +152,16 @@ const UserConfigPage = ({ user, onClose, onUpdatePassword, onUpdateEmail, onUpda
                     {/* 个人资料标签页 */}
                     {activeTab === 'profile' && (
                         <div className="tab-pane fade show active">
-                            <div className="card">
-                                <div className="card-body">
+                            <div className="card" style={{
+                                background: 'rgba(255, 255, 255, 0.95)',
+                                borderRadius: '16px',
+                                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08)',
+                                border: '1px solid rgba(255, 255, 255, 0.8)',
+                                backdropFilter: 'blur(10px)',
+                                transition: 'all 0.3s ease',
+                                overflow: 'hidden'
+                            }}>
+                                <div className="card-body" style={{ padding: '2rem' }}>
                                     <div className="row align-items-center">
                                         <div className="col-md-4 text-center">
                                             <div className="avatar-preview mx-auto mb-3" style={{
@@ -217,8 +228,16 @@ const UserConfigPage = ({ user, onClose, onUpdatePassword, onUpdateEmail, onUpda
                     {/* 更换头像标签页 */}
                     {activeTab === 'avatar' && (
                         <div className="tab-pane fade show active">
-                            <div className="card">
-                                <div className="card-body">
+                            <div className="card" style={{
+                                background: 'rgba(255, 255, 255, 0.95)',
+                                borderRadius: '16px',
+                                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08)',
+                                border: '1px solid rgba(255, 255, 255, 0.8)',
+                                backdropFilter: 'blur(10px)',
+                                transition: 'all 0.3s ease',
+                                overflow: 'hidden'
+                            }}>
+                                <div className="card-body" style={{ padding: '2rem' }}>
                                     <div className="row">
                                         <div className="col-md-4 text-center">
                                             <div className="avatar-preview mx-auto mb-3" style={{
@@ -284,8 +303,16 @@ const UserConfigPage = ({ user, onClose, onUpdatePassword, onUpdateEmail, onUpda
                     {/* 修改密码标签页 */}
                     {activeTab === 'password' && (
                         <div className="tab-pane fade show active">
-                            <div className="card">
-                                <div className="card-body">
+                            <div className="card" style={{
+                                background: 'rgba(255, 255, 255, 0.95)',
+                                borderRadius: '16px',
+                                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08)',
+                                border: '1px solid rgba(255, 255, 255, 0.8)',
+                                backdropFilter: 'blur(10px)',
+                                transition: 'all 0.3s ease',
+                                overflow: 'hidden'
+                            }}>
+                                <div className="card-body" style={{ padding: '2rem' }}>
                                     <form onSubmit={handlePasswordSubmit}>
                                         <div className="mb-3">
                                             <label className="form-label fw-bold">
@@ -361,8 +388,16 @@ const UserConfigPage = ({ user, onClose, onUpdatePassword, onUpdateEmail, onUpda
                     {/* 修改邮箱标签页 */}
                     {activeTab === 'email' && (
                         <div className="tab-pane fade show active">
-                            <div className="card">
-                                <div className="card-body">
+                            <div className="card" style={{
+                                background: 'rgba(255, 255, 255, 0.95)',
+                                borderRadius: '16px',
+                                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08)',
+                                border: '1px solid rgba(255, 255, 255, 0.8)',
+                                backdropFilter: 'blur(10px)',
+                                transition: 'all 0.3s ease',
+                                overflow: 'hidden'
+                            }}>
+                                <div className="card-body" style={{ padding: '2rem' }}>
                                     <form onSubmit={handleEmailSubmit}>
                                         <div className="mb-3">
                                             <label className="form-label fw-bold">
@@ -420,18 +455,45 @@ const UserConfigPage = ({ user, onClose, onUpdatePassword, onUpdateEmail, onUpda
                 {/* 底部操作栏 */}
                 <div className="settings-footer mt-4 pt-4 border-top">
                     <button
-                        className="btn btn-outline-danger"
+                        className="btn"
                         onClick={() => {
                             if (confirm(translate('confirm_logout') || '确定要登出吗？')) {
                                 onLogout();
                                 onClose();
                             }
                         }}
+                        style={{
+                            background: 'linear-gradient(135deg, #ff6b6b, #ee5a52)',
+                            border: 'none',
+                            borderRadius: '20px',
+                            padding: '0.8rem 1.5rem',
+                            color: 'white',
+                            fontWeight: '600',
+                            fontSize: '0.9rem',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease',
+                            boxShadow: '0 4px 15px rgba(255, 107, 107, 0.3)',
+                            whiteSpace: 'nowrap',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.5rem'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.target.style.transform = 'translateY(-2px)';
+                            e.target.style.boxShadow = '0 6px 20px rgba(255, 107, 107, 0.4)';
+                            e.target.style.background = 'linear-gradient(135deg, #ff5252, #e53935)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.transform = 'translateY(0)';
+                            e.target.style.boxShadow = '0 4px 15px rgba(255, 107, 107, 0.3)';
+                            e.target.style.background = 'linear-gradient(135deg, #ff6b6b, #ee5a52)';
+                        }}
                     >
                         <i className="fas fa-sign-out-alt me-2"></i>
                         {translate('logout') || '登出'}
                     </button>
                 </div>
+            </div>
             </div>
         </div>
     );
