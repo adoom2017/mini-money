@@ -32,22 +32,41 @@ func AddTransaction(c *gin.Context) {
 		return
 	}
 
-	// Parse the date from the frontend (format: YYYY-MM-DD)
+	// Parse the date from the frontend (supports YYYY-MM-DD and ISO 8601 formats)
 	var transactionDate time.Time
 	if requestData.Date != "" {
-		// Parse the date and set time to current time
-		parsedDate, err := time.Parse("2006-01-02", requestData.Date)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format. Expected YYYY-MM-DD"})
-			return
+		// Try parsing different date formats
+		var parsedDate time.Time
+		var err error
+
+		// First try ISO 8601 format: 2025-09-24T00:00:00.000Z or similar
+		if parsedDate, err = time.Parse("2006-01-02T15:04:05.000Z", requestData.Date); err != nil {
+			// Try without Z suffix
+			if parsedDate, err = time.Parse("2006-01-02T15:04:05.000", requestData.Date); err != nil {
+				// Try RFC3339 format
+				if parsedDate, err = time.Parse(time.RFC3339, requestData.Date); err != nil {
+					// Finally try simple date format: YYYY-MM-DD
+					if parsedDate, err = time.Parse("2006-01-02", requestData.Date); err != nil {
+						c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format. Supported formats: YYYY-MM-DD, YYYY-MM-DDTHH:mm:ss.sssZ"})
+						return
+					}
+				}
+			}
 		}
-		// Set the time to current time but keep the selected date
-		now := time.Now().UTC()
-		transactionDate = time.Date(
-			parsedDate.Year(), parsedDate.Month(), parsedDate.Day(),
-			now.Hour(), now.Minute(), now.Second(), now.Nanosecond(),
-			time.UTC,
-		)
+
+		// If only date was provided (YYYY-MM-DD format), set time to current time
+		// For full datetime formats, use the provided time
+		if len(requestData.Date) <= 10 { // YYYY-MM-DD format
+			now := time.Now().UTC()
+			transactionDate = time.Date(
+				parsedDate.Year(), parsedDate.Month(), parsedDate.Day(),
+				now.Hour(), now.Minute(), now.Second(), now.Nanosecond(),
+				time.UTC,
+			)
+		} else {
+			// Use the full datetime provided, but ensure it's in UTC
+			transactionDate = parsedDate.UTC()
+		}
 	} else {
 		// If no date provided, use current time
 		transactionDate = time.Now().UTC()
