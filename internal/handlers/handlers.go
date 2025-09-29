@@ -154,26 +154,45 @@ func GetCategories(c *gin.Context) {
 func GetStatistics(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 	year, _ := strconv.Atoi(c.DefaultQuery("year", strconv.Itoa(time.Now().Year())))
-	month, _ := strconv.Atoi(c.DefaultQuery("month", strconv.Itoa(int(time.Now().Month()))))
+
+	// Check if month parameter is provided
+	monthStr := c.Query("month")
+	periodType := c.DefaultQuery("period", "month") // "month" or "year", default to "month" for backward compatibility
 
 	var stats models.Statistics
 	var err error
+	var startTime, endTime time.Time
 
-	startOfMonth, endOfMonth := getMonthBounds(year, month)
+	// Determine time bounds based on parameters
+	if monthStr != "" {
+		// If month is explicitly provided, use monthly statistics (backward compatibility)
+		month, _ := strconv.Atoi(monthStr)
+		if month == 0 {
+			month = int(time.Now().Month())
+		}
+		startTime, endTime = getMonthBounds(year, month)
+	} else if periodType == "year" {
+		// If period=year is specified, use yearly statistics
+		startTime, endTime = getYearBounds(year)
+	} else {
+		// Default to current month for backward compatibility
+		month := int(time.Now().Month())
+		startTime, endTime = getMonthBounds(year, month)
+	}
 
-	stats.Summary, err = database.GetSummaryForPeriod(userID, startOfMonth, endOfMonth)
+	stats.Summary, err = database.GetSummaryForPeriod(userID, startTime, endTime)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get summary: " + err.Error()})
 		return
 	}
 
-	stats.ExpenseBreakdown, err = database.GetBreakdownForPeriod(userID, "expense", startOfMonth, endOfMonth, stats.Summary.TotalExpense)
+	stats.ExpenseBreakdown, err = database.GetBreakdownForPeriod(userID, "expense", startTime, endTime, stats.Summary.TotalExpense)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get expense breakdown: " + err.Error()})
 		return
 	}
 
-	stats.IncomeBreakdown, err = database.GetBreakdownForPeriod(userID, "income", startOfMonth, endOfMonth, stats.Summary.TotalIncome)
+	stats.IncomeBreakdown, err = database.GetBreakdownForPeriod(userID, "income", startTime, endTime, stats.Summary.TotalIncome)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get income breakdown: " + err.Error()})
 		return
@@ -752,4 +771,11 @@ func DeleteAssetCategory(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Asset category deleted successfully"})
+}
+
+// getYearBounds returns the start and end time for a given year
+func getYearBounds(year int) (time.Time, time.Time) {
+	start := time.Date(year, time.January, 1, 0, 0, 0, 0, time.UTC)
+	end := time.Date(year, time.December, 31, 23, 59, 59, 0, time.UTC)
+	return start, end
 }
