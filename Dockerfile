@@ -18,7 +18,8 @@ FROM golang:1.24-alpine AS builder
 WORKDIR /app
 
 # 安装必要的依赖，包括CGO所需的编译工具
-RUN apk add --no-cache \
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories \
+    && apk add --no-cache \
     git \
     gcc \
     musl-dev \
