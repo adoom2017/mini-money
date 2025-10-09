@@ -21,9 +21,6 @@ func SetupRoutes() *gin.Engine {
 		auth.POST("/login", handlers.Login)
 	}
 
-	// Public API routes
-	router.GET("/api/categories", handlers.GetCategories)
-
 	// Protected API routes
 	api := router.Group("/api")
 	api.Use(middleware.AuthMiddleware())
@@ -37,6 +34,11 @@ func SetupRoutes() *gin.Engine {
 		api.DELETE("/transactions/:id", handlers.DeleteTransaction)
 		api.GET("/summary", handlers.GetSummary)
 		api.GET("/statistics", handlers.GetStatistics)
+		// Transaction category routes
+		api.GET("/categories", handlers.GetCategories)
+		api.POST("/categories", handlers.CreateTransactionCategory)
+		api.PUT("/categories/:key", handlers.UpdateTransactionCategory)
+		api.DELETE("/categories/:key", handlers.DeleteTransactionCategory)
 		// Asset routes
 		api.GET("/assets", handlers.GetAssets)
 		api.POST("/assets", handlers.CreateAsset)
@@ -50,6 +52,12 @@ func SetupRoutes() *gin.Engine {
 		api.POST("/asset-categories/initialize-defaults", handlers.InitializeDefaultCategories)
 		api.PUT("/asset-categories/:id", handlers.UpdateAssetCategory)
 		api.DELETE("/asset-categories/:id", handlers.DeleteAssetCategory)
+		// Auto transaction routes
+		api.GET("/auto-transactions", handlers.GetAutoTransactions)
+		api.POST("/auto-transactions", handlers.CreateAutoTransaction)
+		api.PUT("/auto-transactions/:id", handlers.UpdateAutoTransaction)
+		api.DELETE("/auto-transactions/:id", handlers.DeleteAutoTransaction)
+		api.PUT("/auto-transactions/:id/toggle", handlers.ToggleAutoTransaction)
 	}
 
 	// Serve frontend for all other routes

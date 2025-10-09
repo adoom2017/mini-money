@@ -144,10 +144,15 @@ func GetSummary(c *gin.Context) {
 
 // GetCategories handles GET /api/categories
 func GetCategories(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"expense": models.ExpenseCategories,
-		"income":  models.IncomeCategories,
-	})
+	userID := middleware.GetUserID(c)
+
+	categories, err := database.GetTransactionCategories(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get categories: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, categories)
 }
 
 // GetStatistics handles GET /api/statistics
@@ -243,6 +248,12 @@ func Register(c *gin.Context) {
 	// Initialize default asset categories for the new user
 	if err := database.InitializeDefaultAssetCategories(user.ID); err != nil {
 		log.Printf("Warning: Failed to initialize default asset categories for user %d: %v", user.ID, err)
+		// Don't fail registration, but log the error
+	}
+
+	// Initialize default transaction categories for the new user
+	if err := database.InitializeDefaultTransactionCategories(user.ID); err != nil {
+		log.Printf("Warning: Failed to initialize default transaction categories for user %d: %v", user.ID, err)
 		// Don't fail registration, but log the error
 	}
 
@@ -778,4 +789,267 @@ func getYearBounds(year int) (time.Time, time.Time) {
 	start := time.Date(year, time.January, 1, 0, 0, 0, 0, time.UTC)
 	end := time.Date(year, time.December, 31, 23, 59, 59, 0, time.UTC)
 	return start, end
+}
+
+// CreateTransactionCategory handles POST /api/categories
+func CreateTransactionCategory(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+
+	var request struct {
+		Key  string `json:"key" binding:"required"`
+		Name string `json:"name" binding:"required"`
+		Icon string `json:"icon" binding:"required"`
+		Type string `json:"type" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Validate type
+	if request.Type != "income" && request.Type != "expense" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Type must be 'income' or 'expense'"})
+		return
+	}
+
+	category, err := database.CreateTransactionCategory(userID, request.Key, request.Name, request.Icon, request.Type)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create category: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, category)
+}
+
+// UpdateTransactionCategory handles PUT /api/categories/:key
+func UpdateTransactionCategory(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	key := c.Param("key")
+
+	var request struct {
+		Name string `json:"name" binding:"required"`
+		Icon string `json:"icon" binding:"required"`
+		Type string `json:"type" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Validate type
+	if request.Type != "income" && request.Type != "expense" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Type must be 'income' or 'expense'"})
+		return
+	}
+
+	category, err := database.UpdateTransactionCategory(userID, key, request.Name, request.Icon, request.Type)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update category: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, category)
+}
+
+// DeleteTransactionCategory handles DELETE /api/categories/:key
+func DeleteTransactionCategory(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	key := c.Param("key")
+	categoryType := c.Query("type") // Required query parameter
+
+	if categoryType == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Type query parameter is required"})
+		return
+	}
+
+	if categoryType != "income" && categoryType != "expense" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Type must be 'income' or 'expense'"})
+		return
+	}
+
+	err := database.DeleteTransactionCategory(userID, key, categoryType)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete category: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Category deleted successfully"})
+}
+
+// GetAutoTransactions handles GET /api/auto-transactions
+func GetAutoTransactions(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+
+	autoTransactions, err := database.GetAutoTransactions(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get auto transactions: " + err.Error()})
+		return
+	}
+
+	// Ensure we return an empty array instead of null when there are no records
+	if autoTransactions == nil {
+		autoTransactions = []models.AutoTransaction{}
+	}
+
+	c.JSON(http.StatusOK, autoTransactions)
+}
+
+// CreateAutoTransaction handles POST /api/auto-transactions
+func CreateAutoTransaction(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+
+	var req models.CreateAutoTransactionRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Calculate next execution date based on frequency
+	nextExecutionDate := calculateNextExecutionDate(req.Frequency, req.DayOfMonth, req.DayOfWeek)
+
+	autoTransaction := models.AutoTransaction{
+		UserID:            userID,
+		Type:              req.Type,
+		Amount:            req.Amount,
+		CategoryKey:       req.CategoryKey,
+		Description:       req.Description,
+		Frequency:         req.Frequency,
+		DayOfMonth:        req.DayOfMonth,
+		DayOfWeek:         req.DayOfWeek,
+		NextExecutionDate: nextExecutionDate,
+		IsActive:          true,
+	}
+
+	id, err := database.CreateAutoTransaction(autoTransaction)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create auto transaction: " + err.Error()})
+		return
+	}
+
+	autoTransaction.ID = id
+	c.JSON(http.StatusCreated, autoTransaction)
+}
+
+// UpdateAutoTransaction handles PUT /api/auto-transactions/:id
+func UpdateAutoTransaction(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
+
+	var req models.UpdateAutoTransactionRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Calculate next execution date based on frequency
+	nextExecutionDate := calculateNextExecutionDate(req.Frequency, req.DayOfMonth, req.DayOfWeek)
+
+	autoTransaction := models.AutoTransaction{
+		ID:                id,
+		UserID:            userID,
+		Type:              req.Type,
+		Amount:            req.Amount,
+		CategoryKey:       req.CategoryKey,
+		Description:       req.Description,
+		Frequency:         req.Frequency,
+		DayOfMonth:        req.DayOfMonth,
+		DayOfWeek:         req.DayOfWeek,
+		NextExecutionDate: nextExecutionDate,
+		IsActive:          req.IsActive,
+	}
+
+	err = database.UpdateAutoTransaction(autoTransaction)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update auto transaction: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, autoTransaction)
+}
+
+// DeleteAutoTransaction handles DELETE /api/auto-transactions/:id
+func DeleteAutoTransaction(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
+
+	err = database.DeleteAutoTransaction(userID, id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete auto transaction: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Auto transaction deleted successfully"})
+}
+
+// ToggleAutoTransaction handles PUT /api/auto-transactions/:id/toggle
+func ToggleAutoTransaction(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
+
+	err = database.ToggleAutoTransaction(userID, id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to toggle auto transaction: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Auto transaction status toggled successfully"})
+}
+
+// calculateNextExecutionDate calculates the next execution date based on frequency
+func calculateNextExecutionDate(frequency string, dayOfMonth, dayOfWeek int) time.Time {
+	now := time.Now()
+
+	switch frequency {
+	case "daily":
+		return now.AddDate(0, 0, 1)
+	case "weekly":
+		// Find next occurrence of the specified day of week
+		daysUntilNext := (dayOfWeek - int(now.Weekday()) + 7) % 7
+		if daysUntilNext == 0 {
+			daysUntilNext = 7 // If it's the same day, schedule for next week
+		}
+		return now.AddDate(0, 0, daysUntilNext)
+	case "monthly":
+		// Find next occurrence of the specified day of month
+		nextMonth := now.AddDate(0, 1, 0)
+		// Handle edge cases like day 31 in February
+		if dayOfMonth > 28 {
+			// Get last day of next month
+			lastDayOfMonth := time.Date(nextMonth.Year(), nextMonth.Month()+1, 0, 0, 0, 0, 0, time.UTC).Day()
+			if dayOfMonth > lastDayOfMonth {
+				dayOfMonth = lastDayOfMonth
+			}
+		}
+		return time.Date(nextMonth.Year(), nextMonth.Month(), dayOfMonth, now.Hour(), now.Minute(), now.Second(), 0, now.Location())
+	case "yearly":
+		// Schedule for next year, same month and day
+		nextYear := now.AddDate(1, 0, 0)
+		if dayOfMonth > 28 {
+			// Handle leap year edge case for February 29th
+			lastDayOfMonth := time.Date(nextYear.Year(), nextYear.Month()+1, 0, 0, 0, 0, 0, time.UTC).Day()
+			if dayOfMonth > lastDayOfMonth {
+				dayOfMonth = lastDayOfMonth
+			}
+		}
+		return time.Date(nextYear.Year(), nextYear.Month(), dayOfMonth, now.Hour(), now.Minute(), now.Second(), 0, now.Location())
+	default:
+		return now.AddDate(0, 0, 1) // Default to daily
+	}
 }

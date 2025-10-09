@@ -6,6 +6,7 @@ import (
 	"mini-money/internal/config"
 	"mini-money/internal/database"
 	"mini-money/internal/routes"
+	"mini-money/internal/scheduler"
 )
 
 func main() {
@@ -17,6 +18,11 @@ func main() {
 		log.Fatal("Failed to initialize database:", err)
 	}
 	defer database.Close()
+
+	// Start auto billing scheduler
+	autoBillingScheduler := scheduler.NewAutoBillingScheduler()
+	go autoBillingScheduler.Start()
+	defer autoBillingScheduler.Stop()
 
 	// Setup routes
 	router := routes.SetupRoutes()

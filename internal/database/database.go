@@ -142,10 +142,57 @@ func createTable() error {
 		return err
 	}
 
+	// Create transaction_categories table for income and expense categories
+	transactionCategoryTableSQL := `
+	CREATE TABLE IF NOT EXISTS transaction_categories (
+		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+		user_id INTEGER NOT NULL,
+		key TEXT NOT NULL,
+		name TEXT NOT NULL,
+		icon TEXT NOT NULL,
+		type TEXT NOT NULL CHECK (type IN ('income', 'expense')),
+		is_default BOOLEAN DEFAULT FALSE,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		FOREIGN KEY (user_id) REFERENCES users (id),
+		UNIQUE(user_id, key, type)
+	);
+	`
+	_, err = db.Exec(transactionCategoryTableSQL)
+	if err != nil {
+		log.Printf("Error creating transaction_categories table: %v", err)
+		return err
+	}
+
 	// Migrate assets table to use category_id instead of category string
 	err = migrateAssetsCategoryToID()
 	if err != nil {
 		log.Printf("Error migrating assets category: %v", err)
+		return err
+	}
+
+	// Create auto_transactions table
+	createAutoTransactionsTable := `
+	CREATE TABLE IF NOT EXISTS auto_transactions (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		user_id INTEGER NOT NULL,
+		type TEXT NOT NULL CHECK(type IN ('income', 'expense')),
+		amount REAL NOT NULL,
+		category_key TEXT NOT NULL,
+		description TEXT,
+		frequency TEXT NOT NULL CHECK(frequency IN ('daily', 'weekly', 'monthly', 'yearly')),
+		day_of_month INTEGER DEFAULT 1,
+		day_of_week INTEGER DEFAULT 1,
+		next_execution_date DATETIME NOT NULL,
+		last_execution_date DATETIME,
+		is_active INTEGER DEFAULT 1,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		FOREIGN KEY (user_id) REFERENCES users (id)
+	);`
+
+	if _, err := db.Exec(createAutoTransactionsTable); err != nil {
+		log.Printf("Error creating auto_transactions table: %v", err)
 		return err
 	}
 
@@ -828,4 +875,316 @@ func GetAssetCategoryByID(categoryID, userID int64) (*models.AssetCategory, erro
 		return nil, err
 	}
 	return &category, nil
+}
+
+// InitializeDefaultTransactionCategories creates default transaction categories for a new user
+func InitializeDefaultTransactionCategories(userID int64) error {
+	// Default expense categories
+	expenseCategories := []struct {
+		Key  string
+		Name string
+		Icon string
+	}{
+		{"food", "餐饮", "🍽️"},
+		{"shopping", "购物", "🛍️"},
+		{"clothing", "服饰", "👗"},
+		{"daily", "日用", "🏠"},
+		{"digital", "数码", "📱"},
+		{"beauty", "美妆", "💄"},
+		{"skincare", "护肤", "🧴"},
+		{"software", "应用软件", "💻"},
+		{"housing", "住房", "🏡"},
+		{"transport", "交通", "🚗"},
+		{"entertainment", "娱乐", "🎮"},
+		{"medical", "医疗", "🏥"},
+		{"communication", "通讯", "📞"},
+		{"car", "汽车", "🚙"},
+		{"education", "学习", "📚"},
+		{"office", "办公", "🏢"},
+		{"sports", "运动", "⚽"},
+		{"social", "社交", "👥"},
+		{"gifts", "人情", "🎁"},
+		{"childcare", "育儿", "👶"},
+		{"pets", "宠物", "🐕"},
+		{"travel", "旅行", "✈️"},
+		{"vacation", "度假", "🏖️"},
+		{"tobacco_alcohol", "烟酒", "🍺"},
+		{"lottery", "彩票", "🎲"},
+	}
+
+	// Default income categories
+	incomeCategories := []struct {
+		Key  string
+		Name string
+		Icon string
+	}{
+		{"salary", "工资", "💰"},
+		{"bonus", "奖金", "🎯"},
+		{"overtime", "加班", "⏰"},
+		{"benefits", "福利", "🎁"},
+		{"fund", "公积金", "🏦"},
+		{"gift_money", "红包", "🧧"},
+		{"part_time", "兼职", "👔"},
+		{"side_business", "副业", "💼"},
+		{"tax_refund", "退税", "📄"},
+		{"investment", "投资", "📈"},
+		{"windfall", "意外收入", "💸"},
+		{"other_income", "其他", "❓"},
+	}
+
+	// Insert expense categories
+	for _, cat := range expenseCategories {
+		_, err := db.Exec(`
+			INSERT OR IGNORE INTO transaction_categories (user_id, key, name, icon, type, is_default) 
+			VALUES (?, ?, ?, ?, 'expense', true)
+		`, userID, cat.Key, cat.Name, cat.Icon)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Insert income categories
+	for _, cat := range incomeCategories {
+		_, err := db.Exec(`
+			INSERT OR IGNORE INTO transaction_categories (user_id, key, name, icon, type, is_default) 
+			VALUES (?, ?, ?, ?, 'income', true)
+		`, userID, cat.Key, cat.Name, cat.Icon)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// GetTransactionCategories retrieves transaction categories for a user
+func GetTransactionCategories(userID int64) (map[string][]models.Category, error) {
+	rows, err := db.Query(`
+		SELECT id, key, name, icon, type 
+		FROM transaction_categories 
+		WHERE user_id = ? 
+		ORDER BY id
+	`, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	result := map[string][]models.Category{
+		"expense": {},
+		"income":  {},
+	}
+
+	for rows.Next() {
+		var category models.Category
+		var categoryType string
+		err := rows.Scan(&category.ID, &category.Key, &category.Name, &category.Icon, &categoryType)
+		if err != nil {
+			return nil, err
+		}
+
+		result[categoryType] = append(result[categoryType], category)
+	}
+
+	return result, nil
+}
+
+// CreateTransactionCategory creates a new transaction category
+func CreateTransactionCategory(userID int64, key, name, icon, categoryType string) (*models.Category, error) {
+	_, err := db.Exec(`
+		INSERT INTO transaction_categories (user_id, key, name, icon, type, is_default) 
+		VALUES (?, ?, ?, ?, ?, false)
+	`, userID, key, name, icon, categoryType)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.Category{
+		Key:  key,
+		Name: name,
+		Icon: icon,
+	}, nil
+}
+
+// UpdateTransactionCategory updates an existing transaction category
+func UpdateTransactionCategory(userID int64, key, name, icon, categoryType string) (*models.Category, error) {
+	_, err := db.Exec(`
+		UPDATE transaction_categories 
+		SET name = ?, icon = ?, updated_at = CURRENT_TIMESTAMP 
+		WHERE user_id = ? AND key = ? AND type = ?
+	`, name, icon, userID, key, categoryType)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.Category{
+		Key:  key,
+		Name: name,
+		Icon: icon,
+	}, nil
+}
+
+// DeleteTransactionCategory deletes a transaction category (only non-default ones)
+func DeleteTransactionCategory(userID int64, key, categoryType string) error {
+	_, err := db.Exec(`
+		DELETE FROM transaction_categories 
+		WHERE user_id = ? AND key = ? AND type = ? AND is_default = false
+	`, userID, key, categoryType)
+	return err
+}
+
+// GetAutoTransactions retrieves all auto transactions for a user
+func GetAutoTransactions(userID int64) ([]models.AutoTransaction, error) {
+	rows, err := db.Query(`
+		SELECT id, user_id, type, amount, category_key, description, frequency, 
+		       day_of_month, day_of_week, next_execution_date, last_execution_date,
+		       is_active, created_at, updated_at
+		FROM auto_transactions 
+		WHERE user_id = ?
+		ORDER BY created_at DESC
+	`, userID)
+	if err != nil {
+		return []models.AutoTransaction{}, err
+	}
+	defer rows.Close()
+
+	// Initialize with empty slice to ensure we return [] instead of null
+	autoTransactions := make([]models.AutoTransaction, 0)
+	for rows.Next() {
+		var at models.AutoTransaction
+		var lastExecutionDate *string
+
+		err := rows.Scan(
+			&at.ID, &at.UserID, &at.Type, &at.Amount, &at.CategoryKey,
+			&at.Description, &at.Frequency, &at.DayOfMonth, &at.DayOfWeek,
+			&at.NextExecutionDate, &lastExecutionDate, &at.IsActive,
+			&at.CreatedAt, &at.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		// Handle nullable last_execution_date
+		if lastExecutionDate != nil {
+			parsedDate, err := time.Parse("2006-01-02 15:04:05", *lastExecutionDate)
+			if err == nil {
+				at.LastExecutionDate = &parsedDate
+			}
+		}
+
+		autoTransactions = append(autoTransactions, at)
+	}
+
+	return autoTransactions, nil
+}
+
+// CreateAutoTransaction creates a new auto transaction
+func CreateAutoTransaction(at models.AutoTransaction) (int64, error) {
+	result, err := db.Exec(`
+		INSERT INTO auto_transactions (
+			user_id, type, amount, category_key, description, frequency,
+			day_of_month, day_of_week, next_execution_date, is_active,
+			created_at, updated_at
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	`, at.UserID, at.Type, at.Amount, at.CategoryKey, at.Description, at.Frequency,
+		at.DayOfMonth, at.DayOfWeek, at.NextExecutionDate, at.IsActive,
+		time.Now(), time.Now())
+
+	if err != nil {
+		return 0, err
+	}
+
+	return result.LastInsertId()
+}
+
+// UpdateAutoTransaction updates an existing auto transaction
+func UpdateAutoTransaction(at models.AutoTransaction) error {
+	_, err := db.Exec(`
+		UPDATE auto_transactions SET
+			type = ?, amount = ?, category_key = ?, description = ?,
+			frequency = ?, day_of_month = ?, day_of_week = ?,
+			next_execution_date = ?, is_active = ?, updated_at = ?
+		WHERE id = ? AND user_id = ?
+	`, at.Type, at.Amount, at.CategoryKey, at.Description, at.Frequency,
+		at.DayOfMonth, at.DayOfWeek, at.NextExecutionDate, at.IsActive,
+		time.Now(), at.ID, at.UserID)
+
+	return err
+}
+
+// DeleteAutoTransaction deletes an auto transaction
+func DeleteAutoTransaction(userID, id int64) error {
+	_, err := db.Exec(`
+		DELETE FROM auto_transactions 
+		WHERE id = ? AND user_id = ?
+	`, id, userID)
+	return err
+}
+
+// ToggleAutoTransaction toggles the active status of an auto transaction
+func ToggleAutoTransaction(userID, id int64) error {
+	_, err := db.Exec(`
+		UPDATE auto_transactions SET
+			is_active = CASE WHEN is_active = 1 THEN 0 ELSE 1 END,
+			updated_at = ?
+		WHERE id = ? AND user_id = ?
+	`, time.Now(), id, userID)
+	return err
+}
+
+// GetDueAutoTransactions retrieves auto transactions that are due for execution
+func GetDueAutoTransactions() ([]models.AutoTransaction, error) {
+	rows, err := db.Query(`
+		SELECT id, user_id, type, amount, category_key, description, frequency, 
+		       day_of_month, day_of_week, next_execution_date, last_execution_date,
+		       is_active, created_at, updated_at
+		FROM auto_transactions 
+		WHERE is_active = 1 AND next_execution_date <= ?
+		ORDER BY next_execution_date ASC
+	`, time.Now())
+	if err != nil {
+		return []models.AutoTransaction{}, err
+	}
+	defer rows.Close()
+
+	// Initialize with empty slice to ensure we return [] instead of null
+	autoTransactions := make([]models.AutoTransaction, 0)
+	for rows.Next() {
+		var at models.AutoTransaction
+		var lastExecutionDate *string
+
+		err := rows.Scan(
+			&at.ID, &at.UserID, &at.Type, &at.Amount, &at.CategoryKey,
+			&at.Description, &at.Frequency, &at.DayOfMonth, &at.DayOfWeek,
+			&at.NextExecutionDate, &lastExecutionDate, &at.IsActive,
+			&at.CreatedAt, &at.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		// Handle nullable last_execution_date
+		if lastExecutionDate != nil {
+			parsedDate, err := time.Parse("2006-01-02 15:04:05", *lastExecutionDate)
+			if err == nil {
+				at.LastExecutionDate = &parsedDate
+			}
+		}
+
+		autoTransactions = append(autoTransactions, at)
+	}
+
+	return autoTransactions, nil
+}
+
+// UpdateAutoTransactionExecution updates the execution dates after processing
+func UpdateAutoTransactionExecution(id int64, nextExecutionDate time.Time) error {
+	_, err := db.Exec(`
+		UPDATE auto_transactions SET
+			last_execution_date = ?,
+			next_execution_date = ?,
+			updated_at = ?
+		WHERE id = ?
+	`, time.Now(), nextExecutionDate, time.Now(), id)
+	return err
 }

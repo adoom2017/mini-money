@@ -71,7 +71,9 @@ type Transaction struct {
 
 // Category represents a transaction category
 type Category struct {
+	ID   int64  `json:"id"`
 	Key  string `json:"key"`
+	Name string `json:"name"`
 	Icon string `json:"icon"`
 }
 
@@ -94,19 +96,6 @@ type CategoryStat struct {
 	CategoryKey string  `json:"categoryKey"`
 	Amount      float64 `json:"amount"`
 	Percentage  float64 `json:"percentage"`
-}
-
-// Predefined categories
-var ExpenseCategories = []Category{
-	{Key: "food", Icon: "🍔"}, {Key: "medical", Icon: "⚕️"}, {Key: "transport", Icon: "🚌"},
-	{Key: "housing", Icon: "🏠"}, {Key: "snacks", Icon: "🍿"}, {Key: "learning", Icon: "🎓"},
-	{Key: "communication", Icon: "📞"}, {Key: "social", Icon: "💬"}, {Key: "investment", Icon: "📈"},
-	{Key: "shopping", Icon: "🛒"}, {Key: "other", Icon: "📝"},
-}
-
-var IncomeCategories = []Category{
-	{Key: "salary", Icon: "💼"}, {Key: "part_time", Icon: "👨‍💻"}, {Key: "financial", Icon: "💰"},
-	{Key: "red_packet", Icon: "🧧"}, {Key: "other", Icon: "🎁"},
 }
 
 // Asset represents an asset account
@@ -175,4 +164,45 @@ type UpdateAssetCategoryRequest struct {
 	Name string `json:"name" binding:"required,min=1,max=50"`
 	Icon string `json:"icon" binding:"required"`
 	Type string `json:"type" binding:"required,oneof=asset liability"`
+}
+
+// AutoTransaction represents a recurring transaction rule
+type AutoTransaction struct {
+	ID                int64      `json:"id"`
+	UserID            int64      `json:"userId"`
+	Type              string     `json:"type"` // "income" or "expense"
+	Amount            float64    `json:"amount"`
+	CategoryKey       string     `json:"categoryKey"`
+	Description       string     `json:"description"`
+	Frequency         string     `json:"frequency"`  // "daily", "weekly", "monthly", "yearly"
+	DayOfMonth        int        `json:"dayOfMonth"` // For monthly/yearly frequency (1-31)
+	DayOfWeek         int        `json:"dayOfWeek"`  // For weekly frequency (0=Sunday, 1=Monday, etc.)
+	NextExecutionDate time.Time  `json:"nextExecutionDate"`
+	LastExecutionDate *time.Time `json:"lastExecutionDate"`
+	IsActive          bool       `json:"isActive"`
+	CreatedAt         time.Time  `json:"createdAt"`
+	UpdatedAt         time.Time  `json:"updatedAt"`
+}
+
+// CreateAutoTransactionRequest represents request to create an auto transaction
+type CreateAutoTransactionRequest struct {
+	Type        string  `json:"type" binding:"required,oneof=income expense"`
+	Amount      float64 `json:"amount" binding:"required,gt=0"`
+	CategoryKey string  `json:"categoryKey" binding:"required"`
+	Description string  `json:"description"`
+	Frequency   string  `json:"frequency" binding:"required,oneof=daily weekly monthly yearly"`
+	DayOfMonth  int     `json:"dayOfMonth,omitempty"` // For monthly/yearly
+	DayOfWeek   int     `json:"dayOfWeek,omitempty"`  // For weekly
+}
+
+// UpdateAutoTransactionRequest represents request to update an auto transaction
+type UpdateAutoTransactionRequest struct {
+	Type        string  `json:"type" binding:"required,oneof=income expense"`
+	Amount      float64 `json:"amount" binding:"required,gt=0"`
+	CategoryKey string  `json:"categoryKey" binding:"required"`
+	Description string  `json:"description"`
+	Frequency   string  `json:"frequency" binding:"required,oneof=daily weekly monthly yearly"`
+	DayOfMonth  int     `json:"dayOfMonth,omitempty"` // For monthly/yearly
+	DayOfWeek   int     `json:"dayOfWeek,omitempty"`  // For weekly
+	IsActive    bool    `json:"isActive"`
 }
